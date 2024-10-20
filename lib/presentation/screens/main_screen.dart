@@ -3,7 +3,6 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
-import 'dart:developer';
 
 import '../../domain/user.dart';
 
@@ -33,7 +32,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   List<AnimatedMarker> _markers = [];
   List<AnimatedMarker> finalListMark = [];
-
+//test push
   void _addMarker(LatLng point) {
     setState(() {
       _markers.add(
@@ -57,7 +56,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 
   LatLng tempPoint = LatLng(0, 0);
-  bool _isPanelOpen = false;
   TextEditingController tempContr = TextEditingController();
 
   @override
