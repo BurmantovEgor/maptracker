@@ -3,8 +3,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
-
 import '../../domain/user.dart';
+import 'package:map_tracker/domain/point.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -14,25 +14,28 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
-  int counter = 0;
-  PanelController controller = new PanelController();
+  PanelController _panelController = new PanelController();
+  TextEditingController _nameTextFieldController = TextEditingController();
+  TextEditingController _descrTextFieldController = TextEditingController();
+
   late final _animatedMapController = AnimatedMapController(
     vsync: this,
     duration: const Duration(milliseconds: 200),
     curve: Curves.easeIn,
   );
+  bool _isSelected = false;
 
-  User temp = User();
+  List<Point> _pointList = [];
 
   @override
   void initState() {
-    temp.temp = [];
     super.initState();
   }
 
+  LatLng? _selectedMarkerPosition;
+
   List<AnimatedMarker> _markers = [];
-  List<AnimatedMarker> finalListMark = [];
-//test push
+
   void _addMarker(LatLng point) {
     setState(() {
       _markers.add(
@@ -42,12 +45,23 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             final size = 25.0 * animation.value;
             return GestureDetector(
                 onTap: () {
-                  controller.open();
-                  tempContr.text = temp.name + "123312";
+                  setState(() {
+                    _isSelected =
+                        !_isSelected; // Меняем состояние иконки при нажатии
+                  });
+
+                  _checkPoint();
+                  tempPoint = point;
+                  _panelController.open();
+                  var _currPoint =
+                      _pointList.firstWhere((x) => x.marker == point);
+                  _nameTextFieldController.text = _currPoint.name;
+                  _descrTextFieldController.text = _currPoint.description;
                 },
                 child: Icon(
                   Icons.location_pin,
-                  size: size,
+                  size: tempPoint == point ? size * 1.2 : size,
+                  color: tempPoint == point ? Colors.red : Colors.black,
                 ));
           },
         ),
@@ -55,8 +69,66 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     });
   }
 
+  void _checkPoint() {
+    var index = _pointList.indexWhere((x) => x.marker == tempPoint);
+    if (index == -1) {
+      setState(() {
+        _markers.removeWhere((x) => x.point == tempPoint);
+      });
+    }
+  }
+
+  void SenterOnPointF(double pos) {
+    double panelHeight = MediaQuery.sizeOf(context).height * pos;
+    double screenHeight = MediaQuery.sizeOf(context).height;
+    double offsetFraction = panelHeight / screenHeight;
+    double newLatitude = tempPoint.latitude -
+        offsetFraction *
+            180.0 /
+            (256 * (_animatedMapController.mapController.camera.zoom.toInt()));
+    _animatedMapController
+        .centerOnPoint(LatLng(newLatitude, tempPoint.longitude));
+  }
+
   LatLng tempPoint = LatLng(0, 0);
-  TextEditingController tempContr = TextEditingController();
+
+  _showYesNoDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Confirmation"),
+          content: Text("Do you want to continue?"),
+          actions: <Widget>[
+            TextButton(
+              child: Text("No"),
+              onPressed: () {
+                Navigator.of(context)
+                    .pop(false); // Закрываем диалог с результатом false
+                _panelController.open();
+              },
+            ),
+            TextButton(
+              child: Text("Yes"),
+              onPressed: () {
+                Navigator.of(context)
+                    .pop(true); // Закрываем диалог с результатом true
+              },
+            ),
+          ],
+        );
+      },
+    ).then((result) {
+      // Обрабатываем результат после закрытия диалога
+      if (result == true) {
+        _checkPoint();
+        _nameTextFieldController.text = "";
+        _descrTextFieldController.text = "";
+      } /*else {
+        print("User pressed No");
+      }*/
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,15 +153,13 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 initialCenter: const LatLng(55.755793, 37.617134),
                 initialZoom: 10,
                 onTap: (tapPosition, point) {
+                  _checkPoint();
+                  _nameTextFieldController.text = "";
+                  _descrTextFieldController.text = "";
                   _animatedMapController.centerOnPoint(point);
-                  if (!finalListMark.contains(tempPoint)) {
-                    setState(() {
-                      _markers.remove(tempPoint);
-                    });
-                  }
                   tempPoint = point;
                   _addMarker(point);
-                  controller.open();
+                  _panelController.open();
                 },
               ),
               children: [
@@ -105,30 +175,23 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             )),
             SlidingUpPanel(
               onPanelSlide: (double pos) {
-                double panelHeight = MediaQuery.sizeOf(context).height * pos;
-
-                double screenHeight = MediaQuery.sizeOf(context).height;
-
-                double offsetFraction = panelHeight / screenHeight;
-
-                double newLatitude = tempPoint.latitude -
-                    offsetFraction *
-                        180.0 /
-                        (256 *
-                            (_animatedMapController.mapController.camera.zoom
-                                .toInt()));
-                _animatedMapController
-                    .centerOnPoint(LatLng(newLatitude, tempPoint.longitude));
+                SenterOnPointF(pos);
               },
-              onPanelOpened: () {
-                _isPanelOpen = true;
-              },
+              onPanelOpened: () {},
               onPanelClosed: () {
-                _isPanelOpen = false;
+                if (!(_nameTextFieldController.text == "") ||
+                    !(_descrTextFieldController.text == "")) {
+                  //  _showYesNoDialog(context);
+                } else {
+                  _checkPoint();
+                  _nameTextFieldController.text = "";
+                  _descrTextFieldController.text = "";
+                }
+                tempPoint = LatLng(0, 0);
               },
               maxHeight: MediaQuery.sizeOf(context).height * 0.4,
               minHeight: 0,
-              controller: controller,
+              controller: _panelController,
               defaultPanelState: PanelState.CLOSED,
               backdropEnabled: false,
               panel: Container(
@@ -137,9 +200,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 child: Column(
                   children: [
                     TextField(
-                      controller: tempContr,
+                      controller: _nameTextFieldController,
                       onChanged: (String a) {
-                        temp.name = a;
+                        _nameTextFieldController.text = a;
                       },
                       decoration: InputDecoration(
                           fillColor: Colors.green,
@@ -148,8 +211,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                               borderRadius: BorderRadius.circular(10))),
                     ),
                     TextField(
+                      controller: _descrTextFieldController,
                       onChanged: (String a) {
-                        temp.descr = a;
+                        _descrTextFieldController.text = a;
                       },
                       decoration: InputDecoration(
                           fillColor: Colors.green,
@@ -160,30 +224,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                     ElevatedButton(
                         onPressed: () {
                           setState(() {
-                            temp.temp?.add(
-                              AnimatedMarker(
-                                point: tempPoint,
-                                builder: (_, animation) {
-                                  final size = 25.0 * animation.value;
-                                  return Icon(
-                                    Icons.location_pin,
-                                    size: size,
-                                  );
-                                },
-                              ),
-                            );
-                            finalListMark.add(
-                              AnimatedMarker(
-                                point: tempPoint,
-                                builder: (_, animation) {
-                                  final size = 25.0 * animation.value;
-                                  return Icon(
-                                    Icons.location_pin,
-                                    size: size,
-                                  );
-                                },
-                              ),
-                            );
+                            _panelController.close();
+                            _pointList.add(Point(
+                                _nameTextFieldController.text,
+                                _descrTextFieldController.text,
+                                LatLng(
+                                    tempPoint.latitude, tempPoint.longitude)));
                           });
                         },
                         child: Text("data"))
