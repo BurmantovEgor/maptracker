@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:map_tracker/main_screen.dart';
+import 'package:map_tracker/presentation/screens/main_screen.dart';
+import 'package:oauth2_client/oauth2_client.dart';
+import 'package:map_tracker/domain/user.dart';
 
 class AuthorizationScreen extends StatefulWidget {
   const AuthorizationScreen({super.key});
@@ -26,17 +28,19 @@ class _AuthorizationScreenState extends State<AuthorizationScreen> {
             children: [
               TextField(
                 decoration: InputDecoration(
-                    enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(width: 3, color: Colors.black),
-                        borderRadius: BorderRadius.circular(20)),
-                    hintText: 'Номер телефона',
-                    ),
+                  enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(width: 2, color: Colors.black),
+                      borderRadius: BorderRadius.circular(20)),
+                  hintText: 'Номер телефона',
+                ),
               ),
-              SizedBox(height: 10,),
+              SizedBox(
+                height: 10,
+              ),
               TextField(
                 decoration: InputDecoration(
                     enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(width: 3, color: Colors.black),
+                        borderSide: BorderSide(width: 2, color: Colors.black),
                         borderRadius: BorderRadius.circular(20)),
                     hintText: 'Пароль'),
               ),

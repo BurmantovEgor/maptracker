@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:map_tracker/authorization_screen.dart';
+import 'package:map_tracker/presentation/authorization_screen.dart';
 
 void main() {
   runApp(const MyApp());
