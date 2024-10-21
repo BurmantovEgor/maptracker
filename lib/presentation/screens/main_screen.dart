@@ -3,8 +3,9 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
-import '../../domain/user.dart';
 import 'package:map_tracker/domain/point.dart';
+
+import '../widgets/CustomTextField.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -23,16 +24,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     duration: const Duration(milliseconds: 200),
     curve: Curves.easeIn,
   );
-  bool _isSelected = false;
 
-  List<Point> _pointList = [];
-
+  List<PointDTO> _pointList = [];
   @override
   void initState() {
     super.initState();
   }
-
-  LatLng? _selectedMarkerPosition;
 
   List<AnimatedMarker> _markers = [];
 
@@ -45,10 +42,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             final size = 25.0 * animation.value;
             return GestureDetector(
                 onTap: () {
-                  setState(() {
-                    _isSelected =
-                        !_isSelected; // Меняем состояние иконки при нажатии
-                  });
 
                   _checkPoint();
                   tempPoint = point;
@@ -105,6 +98,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               onPressed: () {
                 Navigator.of(context)
                     .pop(false); // Закрываем диалог с результатом false
+              //  _panelController.animatePanelToPosition(0.4);
+
                 _panelController.open();
               },
             ),
@@ -144,6 +139,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         body: Stack(
           children: [
             SizedBox(
+              height: MediaQuery.sizeOf(context).height,
                 child: FlutterMap(
               mapController: _animatedMapController.mapController,
               options: MapOptions(
@@ -159,6 +155,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   _animatedMapController.centerOnPoint(point);
                   tempPoint = point;
                   _addMarker(point);
+                 // _panelController.animatePanelToPosition(0.4);
+
                   _panelController.open();
                 },
               ),
@@ -174,11 +172,20 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               ],
             )),
             SlidingUpPanel(
+              color: Colors.black,
               onPanelSlide: (double pos) {
-                SenterOnPointF(pos);
               },
-              onPanelOpened: () {},
+              onPanelOpened: () {
+                setState(() {
+
+                });
+              },
               onPanelClosed: () {
+                setState(() {
+
+                });
+                //SenterOnPointF(0);
+
                 if (!(_nameTextFieldController.text == "") ||
                     !(_descrTextFieldController.text == "")) {
                   //  _showYesNoDialog(context);
@@ -195,37 +202,20 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               defaultPanelState: PanelState.CLOSED,
               backdropEnabled: false,
               panel: Container(
-                  child: Padding(
-                padding: EdgeInsets.all(20),
                 child: Column(
                   children: [
-                    TextField(
-                      controller: _nameTextFieldController,
-                      onChanged: (String a) {
-                        _nameTextFieldController.text = a;
-                      },
-                      decoration: InputDecoration(
-                          fillColor: Colors.green,
-                          border: OutlineInputBorder(
-                              borderSide: BorderSide(width: 10),
-                              borderRadius: BorderRadius.circular(10))),
+                    CustomTextField(
+                      nameTextFieldController: _nameTextFieldController,
                     ),
-                    TextField(
-                      controller: _descrTextFieldController,
-                      onChanged: (String a) {
-                        _descrTextFieldController.text = a;
-                      },
-                      decoration: InputDecoration(
-                          fillColor: Colors.green,
-                          border: OutlineInputBorder(
-                              borderSide: BorderSide(width: 10),
-                              borderRadius: BorderRadius.circular(10))),
+                    CustomTextField(
+                      nameTextFieldController: _descrTextFieldController,
                     ),
                     ElevatedButton(
                         onPressed: () {
                           setState(() {
+                            //_panelController.animatePanelToPosition(0);
                             _panelController.close();
-                            _pointList.add(Point(
+                            _pointList.add(PointDTO(
                                 _nameTextFieldController.text,
                                 _descrTextFieldController.text,
                                 LatLng(
@@ -235,7 +225,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                         child: Text("data"))
                   ],
                 ),
-              )),
+              ),
               border: Border.all(
                   width: 0, color: Color.fromARGB(255, 240, 240, 240)),
               borderRadius: BorderRadius.only(

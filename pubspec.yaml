@@ -39,6 +39,7 @@ dependencies:
   oauth2_client: ^3.3.0
   flutter_map: ^7.0.2
   flutter_map_animations: ^0.7.1
+  yandex_mapkit: ^4.1.0
 
 dev_dependencies:
   flutter_test:
@@ -63,8 +64,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  #assets:
-  #   - icons/map_point.png
+  assets:
+    - assets/icons/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
