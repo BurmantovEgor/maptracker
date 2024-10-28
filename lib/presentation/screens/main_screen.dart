@@ -1,3 +1,4 @@
+/*
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
@@ -26,6 +27,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   );
 
   List<PointDTO> _pointList = [];
+
   @override
   void initState() {
     super.initState();
@@ -42,7 +44,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             final size = 25.0 * animation.value;
             return GestureDetector(
                 onTap: () {
-
                   _checkPoint();
                   tempPoint = point;
                   _panelController.open();
@@ -98,7 +99,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               onPressed: () {
                 Navigator.of(context)
                     .pop(false); // Закрываем диалог с результатом false
-              //  _panelController.animatePanelToPosition(0.4);
+                //  _panelController.animatePanelToPosition(0.4);
 
                 _panelController.open();
               },
@@ -119,9 +120,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         _checkPoint();
         _nameTextFieldController.text = "";
         _descrTextFieldController.text = "";
-      } /*else {
+      } */
+/*else {
         print("User pressed No");
-      }*/
+      }*//*
+
     });
   }
 
@@ -139,51 +142,46 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         body: Stack(
           children: [
             SizedBox(
-              height: MediaQuery.sizeOf(context).height,
+                height: MediaQuery.sizeOf(context).height,
                 child: FlutterMap(
-              mapController: _animatedMapController.mapController,
-              options: MapOptions(
-                interactionOptions: InteractionOptions(
-                  flags: InteractiveFlag.drag | InteractiveFlag.pinchZoom,
-                ),
-                initialCenter: const LatLng(55.755793, 37.617134),
-                initialZoom: 10,
-                onTap: (tapPosition, point) {
-                  _checkPoint();
-                  _nameTextFieldController.text = "";
-                  _descrTextFieldController.text = "";
-                  _animatedMapController.centerOnPoint(point);
-                  tempPoint = point;
-                  _addMarker(point);
-                 // _panelController.animatePanelToPosition(0.4);
+                  mapController: _animatedMapController.mapController,
+                  options: MapOptions(
+                    interactionOptions: InteractionOptions(
+                      flags: InteractiveFlag.drag | InteractiveFlag.pinchZoom,
+                    ),
+                    initialCenter: const LatLng(55.755793, 37.617134),
+                    initialZoom: 10,
+                    onTap: (tapPosition, point) {
+                      _checkPoint();
+                      _nameTextFieldController.text = "";
+                      _descrTextFieldController.text = "";
+                      _animatedMapController.centerOnPoint(point);
+                      tempPoint = point;
+                      _addMarker(point);
+                      // _panelController.animatePanelToPosition(0.4);
 
-                  _panelController.open();
-                },
-              ),
-              children: [
-                TileLayer(
-                  urlTemplate:
-                      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  subdomains: ['a', 'b', 'c'],
-                ),
-                AnimatedMarkerLayer(
-                  markers: _markers,
-                ),
-              ],
-            )),
+                      _panelController.open();
+                    },
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate:
+                          'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      subdomains: ['a', 'b', 'c'],
+                    ),
+                    AnimatedMarkerLayer(
+                      markers: _markers,
+                    ),
+                  ],
+                )),
             SlidingUpPanel(
               color: Colors.black,
-              onPanelSlide: (double pos) {
-              },
+              onPanelSlide: (double pos) {},
               onPanelOpened: () {
-                setState(() {
-
-                });
+                setState(() {});
               },
               onPanelClosed: () {
-                setState(() {
-
-                });
+                setState(() {});
                 //SenterOnPointF(0);
 
                 if (!(_nameTextFieldController.text == "") ||
@@ -204,12 +202,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               panel: Container(
                 child: Column(
                   children: [
-                    CustomTextField(
-                      nameTextFieldController: _nameTextFieldController,
-                    ),
-                    CustomTextField(
-                      nameTextFieldController: _descrTextFieldController,
-                    ),
                     ElevatedButton(
                         onPressed: () {
                           setState(() {
@@ -237,3 +229,4 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     );
   }
 }
+*/
