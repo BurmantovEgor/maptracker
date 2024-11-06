@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:latlong2/latlong.dart';
@@ -10,7 +11,7 @@ class Place {
   String name = "";
   String description = "";
   Point marker;
-  List<Image>? photoList;
+  List<File> photoList = [];
   bool isSelected = false;
   bool isAdded = false;
 
@@ -42,5 +43,5 @@ class Place {
   }
 
   Place(/*this.id, this.userId, this.categoryId,*/ this.name, this.description,
-      this.marker/*, this.photoList, this.isSelected*/);
+      this.marker, /*this.photoList, this.isSelected*/);
 }

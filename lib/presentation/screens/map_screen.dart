@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:map_tracker/bloc/PlaceListBloc.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart';
 import 'package:map_tracker/domain/point.dart';
 import '../widgets/CustomTextField.dart';
+import 'package:image_picker/image_picker.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -20,11 +24,15 @@ class _MapScreenState extends State<MapScreen> {
       TextEditingController();
 
   final PageController _pageController = PageController(viewportFraction: 0.9);
-  List<Place> _pointList = [];
+  final List<Place> _pointList = [];
+
   int _selectedIndex = 0;
+  late PlaceListBloc _placeListBloc;
 
   @override
   void initState() {
+    _placeListBloc = PlaceListBloc(_pointList);
+    _placeListBloc.add(RemoveTempPlaces());
     super.initState();
   }
 
@@ -47,27 +55,37 @@ class _MapScreenState extends State<MapScreen> {
         .entries
         .map(
           (entry) => PlacemarkMapObject(
-            mapId: MapObjectId('placemark_${entry.key}'),
-            point: entry.value.marker,
-            icon: PlacemarkIcon.single(
-              PlacemarkIconStyle(
-                anchor: Offset(0.5, 1.0), // Привязка к нижней части иконки
-                image: BitmapDescriptor.fromAssetImage(
-                    'assets/icons/location.png'),
-                scale: entry.value.isSelected ? 0.15 : 0.1,
+              mapId: MapObjectId('placemark_${entry.key}'),
+              point: entry.value.marker,
+              icon: PlacemarkIcon.single(
+                PlacemarkIconStyle(
+                  anchor: Offset(0.5, 1.0), // Привязка к нижней части иконки
+                  image: BitmapDescriptor.fromAssetImage(
+                      'assets/icons/location.png'),
+                  scale: entry.value.isSelected ? 0.15 : 0.1,
+                ),
               ),
-            ),
-            onTap: (o, p) => setState(() {
+              onTap: (o, p) {
+                setState(() {
+                  _removeTemporaryPoints();
+                  _isMarkerTapped = true;
+                  SelectPoint(entry.value);
+                  _pageController.animateToPage(entry.key,
+                      duration: Duration(milliseconds: 400),
+                      curve: Curves.linear);
+                  _moveCamera(entry.value.marker, 10);
+                });
+              }
+              /* onTap: (o, p) => setState(() {
               _removeTemporaryPoints();
               _isMarkerTapped = true;
               SelectPoint(entry.value);
-              _pageController.animateToPage(entry.key, duration: Duration(milliseconds: 400), curve: Curves.linear);
+              _pageController.animateToPage(entry.key,
+                  duration: Duration(milliseconds: 400), curve: Curves.linear);
+            }
+            ),*/
 
-              _moveCamera(entry.value.marker, 10);
-
-
-            }),
-          ),
+              ),
         )
         .toList();
   }
@@ -90,7 +108,7 @@ class _MapScreenState extends State<MapScreen> {
     });
     SelectPoint(newPlace);
     _pageController.animateToPage(_selectedIndex,
-        duration: Duration(milliseconds: 500), curve: Curves.linear);
+        duration: Duration(milliseconds: 400), curve: Curves.linear);
     _moveCamera(point, 10);
   }
 
@@ -125,7 +143,6 @@ class _MapScreenState extends State<MapScreen> {
               onMapTap: (point) => _addNewPoint(point),
               onMapCreated: (controller) async {
                 _mapController = controller;
-                // await _moveCamera(Point(latitude: 41.887064, longitude: 12.504809), 10);
               },
               mapObjects: _convertPlacesToMapObjects(),
             ),
@@ -165,40 +182,108 @@ class _MapScreenState extends State<MapScreen> {
   // Builds each page item for PageView
   Widget _buildPageItem(Place place) {
     return GestureDetector(
-      onTap: () => _panelController.open(),
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 10),
-        decoration: BoxDecoration(
-          color: Colors.black,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.6),
-              blurRadius: 4,
+        onTap: () => _panelController.open(),
+        child: Container(
+            margin: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.6),
+                  blurRadius: 7,
+                ),
+              ],
             ),
-          ],
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          place.name.isNotEmpty ? place.name : 'New Point',
-          style: const TextStyle(color: Colors.white),
-        ),
-      ),
-    );
+            alignment: Alignment.topLeft,
+            child: Container(
+                margin: EdgeInsets.only(top: 10, left: 15),
+                child: Row(children: [
+                  Expanded(
+                    child: Column(children: [
+                      Text(
+                        softWrap: true,
+                        maxLines: 2,
+                        place.name.isNotEmpty ? place.name : 'New Point',
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 20,
+                        ),
+                      ),
+                      Text(
+                        softWrap: true,
+                        maxLines: 4,
+                        place.description.isNotEmpty
+                            ? place.description.length > 40
+                                ? place.description.substring(0, 40) + "..."
+                                : place.description
+                            : 'New Point',
+                        style:
+                            const TextStyle(color: Colors.black, fontSize: 15),
+                      ),
+                    ]),
+                  ),
+                  Expanded(
+                    child: place.photoList.isEmpty
+                        ? Center(child: Text("Нет выбранных изображений"))
+                        : Center(child: GridView.builder(
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 4.0,
+                              mainAxisSpacing: 4.0,
+                            ),
+                            itemCount: place.photoList.length > 2? 2: place.photoList.length,
+                            itemBuilder: (context, index) {
+                              return  ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Container(
+
+                                      child: index < 2? Image.file(
+                                        place.photoList[index],
+                                        fit: BoxFit.cover,
+                                      ):null,
+                                    ),
+                                  );
+                            },
+                          ),
+                  ),
+                  )]))));
   }
 
   // Builds the sliding panel with Place details
   Widget _buildSlidingPanel() {
     return SlidingUpPanel(
+      renderPanelSheet: true,
       controller: _panelController,
       maxHeight: MediaQuery.of(context).size.height * 0.5,
       minHeight: 0,
       panelBuilder: (controller) => _panelBody(),
+      color: Colors.black,
       borderRadius: const BorderRadius.only(
         topLeft: Radius.circular(25),
         topRight: Radius.circular(25),
       ),
     );
+  }
+
+ // List<File> _images = [];
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _pickImage(Place place) async {
+    try {
+      final List<XFile>? pickedFiles = await _picker.pickMultiImage();
+      if (pickedFiles != null && pickedFiles.isNotEmpty) {
+        setState(() {
+          place.photoList.addAll(pickedFiles.map((file) => File(file.path)).toList());
+        });
+      } else {
+        // Если пользователь не выбрал изображения
+        print("No images selected.");
+      }
+    } catch (e) {
+      print("Error picking images: $e");
+    }
   }
 
   // Panel content with TextFields for name and description
@@ -214,6 +299,42 @@ class _MapScreenState extends State<MapScreen> {
           nameTextFieldController: _descrTextFieldController,
           isExpanded: true,
           isEnabled: true,
+        ),
+        ElevatedButton(
+          onPressed: () {
+            _pickImage(_pointList[_selectedIndex]);
+          },
+          child: const Text("Выбрать изображения"),
+        ),
+        Expanded(
+          child: _pointList.isEmpty? Center(child: Text("Нет выбранных изображений")):
+          _pointList[_selectedIndex].photoList.isEmpty
+              ? Center(child: Text("Нет выбранных изображений"))
+              : GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    crossAxisSpacing: 4.0,
+                    mainAxisSpacing: 4.0,
+                  ),
+                  itemCount: _pointList[_selectedIndex].photoList.length==0? 1:_pointList[_selectedIndex].photoList.length,
+                  itemBuilder: (context, index) {
+                    return GestureDetector(
+                      onTap: () {
+
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+
+                          child:  Image.file(
+                            _pointList[_selectedIndex].photoList[index],
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      )
+                    );
+                  },
+                ),
         ),
         ElevatedButton(
           onPressed: () {
