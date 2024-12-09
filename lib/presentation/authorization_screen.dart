@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:map_tracker/presentation/screens/main_screen.dart';
-import 'package:map_tracker/presentation/screens/map_screen.dart';
+import 'package:map_tracker/bloc/ui/screens/map_screen.dart';
 import 'package:oauth2_client/oauth2_client.dart';
 import 'package:map_tracker/domain/user.dart';
 

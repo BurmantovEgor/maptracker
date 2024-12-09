@@ -21,6 +21,7 @@ class CustomTextField extends StatelessWidget {
           enabled: isEnabled,
           maxLength: isExpanded ? null : 40,
           maxLines: isExpanded ? null : 1,
+          minLines: isEnabled? null: 4,
           controller: nameTextFieldController,
           decoration: const InputDecoration(
             filled: true,

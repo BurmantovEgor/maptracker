@@ -1,3 +1,4 @@
+/*
 import 'dart:ui';
 
 import 'package:flutter_map_animations/flutter_map_animations.dart';
@@ -9,3 +10,4 @@ class User {
   String? name;
   Image? profileImage;
 }
+*/

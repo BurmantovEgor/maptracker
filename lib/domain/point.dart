@@ -1,3 +1,4 @@
+/*
 import 'dart:io';
 import 'dart:ui';
 
@@ -42,6 +43,11 @@ class Place {
     );
   }
 
-  Place(/*this.id, this.userId, this.categoryId,*/ this.name, this.description,
-      this.marker, /*this.photoList, this.isSelected*/);
+  Place(
+this.id, this.userId, this.categoryId,
+ this.name, this.description,
+      this.marker,
+this.photoList, this.isSelected
+);
 }
+*/
