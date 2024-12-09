@@ -1,19 +1,37 @@
 import 'package:yandex_mapkit/yandex_mapkit.dart';
 
-class Place {
-  final String name;
-  final String description;
-  final Point marker;
-  final List<String> photoPaths;
+class place {
+  final Point placeLocation;
+  String name;
+  String description;
+  final List<String>? photos; // Список URL фотографий
+  final bool isPointTemporay;
   bool isSelected;
-  bool isAdded;
 
-  Place({
-    required this.name,
-    required this.description,
-    required this.marker,
-    this.photoPaths = const [],
-    this.isSelected = false,
-    this.isAdded = false,
-  });
+  place(
+      {
+        required this.photos,
+         required this.placeLocation,
+      required this.name,
+      required this.description,
+      required this.isPointTemporay,
+      required this.isSelected});
+
+  place copyWith({
+    List<String>? photos,
+    bool? isSelected,
+    Point? placeLocation,
+    String? name,
+    String? description,
+    bool? isPointTemporay,
+  }) {
+    return place(
+      photos: photos?? this.photos,
+      isSelected: isSelected ?? this.isSelected,
+      placeLocation: placeLocation ?? this.placeLocation,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      isPointTemporay: isPointTemporay ?? this.isPointTemporay,
+    );
+  }
 }

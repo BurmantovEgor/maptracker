@@ -1,8 +1,6 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import 'bloc/data/repositories/current_location.dart';
 import 'bloc/point/point_block.dart';
 import 'bloc/ui/screens/map_screen.dart';
 

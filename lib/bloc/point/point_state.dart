@@ -1,14 +1,14 @@
-import '../data/models/Location.dart';
+import '../data/models/place.dart';
 
 abstract class PointState {}
 
 class PointsInitialState extends PointState {}
 
 class PointsLoadedState extends PointState {
-  final List<CustomPoint> points;
+  final List<place> points;
   final int selectedIndex;
-  final CustomPoint? selectedPoint;
-  final CustomPoint? temporaryPoint;
+  final place? selectedPoint;
+  final place? temporaryPoint;
 
   PointsLoadedState({
     required this.points,
