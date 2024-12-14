@@ -12,7 +12,8 @@ class UserService {
   UserService()
       : dio = Dio(
           BaseOptions(
-            baseUrl: "https://192.168.3.38:7042",
+           // baseUrl: "https://192.168.3.38:7042",
+            baseUrl: "https://192.168.3.10:7042",
           ),
         ) {
     (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =
@@ -26,7 +27,7 @@ class UserService {
   Future<List<String>> searchUser(FetchUsersEvent event) async {
     try {
       final response = await dio.get(
-        'https://192.168.3.38:7042/api/users/search',
+        '/api/users/search',
         queryParameters: {'username': event.query},
       );
       List<String> users = [];

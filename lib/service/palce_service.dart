@@ -15,7 +15,8 @@ class PlaceService {
   PlaceService()
       : dio = Dio(
           BaseOptions(
-            baseUrl: "https://192.168.3.38:7042",
+         //   baseUrl: "https://192.168.3.38:7042",
+            baseUrl: "https://192.168.3.10:7042",
           ),
         ) {
     (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =
