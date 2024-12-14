@@ -12,6 +12,24 @@ class LocationLoaded extends LocationState {
   LocationLoaded(this.userLocation);
 }
 
+class LocationIdle extends LocationState {
+  final Point userLocation;
+
+  LocationIdle(this.userLocation);
+}
+
+class LocationUpdated extends LocationState {
+  final Point userLocation;
+
+  LocationUpdated(this.userLocation);
+}
+
+class BackLocationUpdated extends LocationState {
+  final Point userLocation;
+
+  BackLocationUpdated(this.userLocation);
+}
+
 class LocationError extends LocationState {
   final String message;
 

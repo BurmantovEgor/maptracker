@@ -1,32 +1,36 @@
+import 'package:map_tracker/data/models/photo.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart';
 
-class place {
-  final Point placeLocation;
+class Place {
+  final String id;
   String name;
   String description;
-  final List<String>? photos; // Список URL фотографий
+  final Point placeLocation;
+  List<Photo> photosMain = [];
+
   final bool isPointTemporay;
   bool isSelected;
 
-  place(
-      {
-        required this.photos,
-         required this.placeLocation,
+  Place(
+      {required this.id,
+      required this.photosMain,
+      required this.placeLocation,
       required this.name,
       required this.description,
       required this.isPointTemporay,
       required this.isSelected});
 
-  place copyWith({
-    List<String>? photos,
-    bool? isSelected,
-    Point? placeLocation,
-    String? name,
-    String? description,
-    bool? isPointTemporay,
-  }) {
-    return place(
-      photos: photos?? this.photos,
+  Place copyWith(
+      {required List<Photo> photosMain,
+      bool? isSelected,
+      Point? placeLocation,
+      String? name,
+      String? description,
+      bool? isPointTemporay,
+      String? id}) {
+    return Place(
+      id: id ?? this.id,
+      photosMain: photosMain,
       isSelected: isSelected ?? this.isSelected,
       placeLocation: placeLocation ?? this.placeLocation,
       name: name ?? this.name,

@@ -1,24 +1,44 @@
 import 'package:yandex_mapkit/yandex_mapkit.dart';
 
-import '../data/models/place.dart';
+import '../../data/models/place.dart';
+import '../../data/models/user.dart';
+
 
 abstract class PointEvent {}
 
-class LoadPointsEvent extends PointEvent {}
+class LoadPointsEvent extends PointEvent {
+  final String jwt;
+  LoadPointsEvent(this.jwt);
+}
+
+
+class OtherUserPointsLoadingEvent extends PointEvent{
+  final String jwt;
+  final String userId;
+  OtherUserPointsLoadingEvent(this.jwt, this.userId);
+}
 
 class CreateTemporaryPointEvent extends PointEvent {
   final double latitude;
   final double longitude;
   CreateTemporaryPointEvent(this.latitude, this.longitude);
 }
-class SaveTemporaryPointEvent extends PointEvent {}
 class CancelTemporaryPointEvent extends PointEvent {}
 class RemovePointEvent extends PointEvent {}
 
 class UpdatePointEvent extends PointEvent {
-  final place updatedPoint;
-  UpdatePointEvent(this.updatedPoint);
+  final Place updatedPoint;
+  final User currentUser;
+
+  UpdatePointEvent(this.updatedPoint, this.currentUser);
 }
+
+class SaveTemporaryPointEvent extends PointEvent {
+  final Place newPoint;
+  final User currentUser;
+  SaveTemporaryPointEvent(this.newPoint, this.currentUser);
+}
+
 
 class SelectPointEvent extends PointEvent {
   final int index;

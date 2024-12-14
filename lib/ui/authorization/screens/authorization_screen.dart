@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:map_tracker/bloc/ui/mainMap/screens/map_screen.dart';
+
+import '../../mainMap/screens/map_screen.dart';
 
 class AuthorizationScreen extends StatefulWidget {
   const AuthorizationScreen({super.key});
