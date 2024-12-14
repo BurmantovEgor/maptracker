@@ -1,6 +1,6 @@
 class Photo {
   final String id;
-  final String description;
+  final String? description;
   final String filePath;
 
   Photo({

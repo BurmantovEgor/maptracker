@@ -47,7 +47,8 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
       _isDropdownExpanded = !_isDropdownExpanded;
       if (_isDropdownExpanded) {
         _controller.clear();
-        BlocProvider.of<UserSearchBloc>(context).add(FetchUsersEvent(''));
+        BlocProvider.of<UserSearchBloc>(context)
+            .add(FetchUsersEvent('', widget.currentUser.jwt));
       }
     });
   }
@@ -543,8 +544,10 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
                                     border: InputBorder.none,
                                   ),
                                   onChanged: (value) {
+                                    print('ya tut');
                                     BlocProvider.of<UserSearchBloc>(context)
-                                        .add(FetchUsersEvent(value));
+                                        .add(FetchUsersEvent(
+                                            value, widget.currentUser.jwt));
                                   },
                                 )
                               : Text(
@@ -566,7 +569,7 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
                       builder: (context, state) {
                         if (state is UserSearchLoadingState) {
                           return Container(
-                           height: currentDeviceHeight,
+                            height: currentDeviceHeight,
                             color: Colors.white,
                             child: const Center(
                               child: CircularProgressIndicator(),

@@ -26,9 +26,16 @@ class UserService {
 
   Future<List<String>> searchUser(FetchUsersEvent event) async {
     try {
+
+      print('поиск пошел');
       final response = await dio.get(
-        '/api/users/search',
-        queryParameters: {'username': event.query},
+        'https://192.168.3.10:7042/api/users/search?username=${event.query}',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer ${event.jwt}',
+          },
+        ),
+      //  queryParameters: {'username': event.query},
       );
       List<String> users = [];
       if (response.statusCode == 200) {

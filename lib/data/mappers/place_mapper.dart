@@ -30,7 +30,7 @@ class PlaceMapper {
       }
       return PhotoCreateDTO(
         file: File(photo.filePath),
-        description: photo.description,
+        description: "нету",
       );
     }).toList();
 

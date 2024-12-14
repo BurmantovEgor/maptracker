@@ -40,8 +40,12 @@ class PlaceService {
           },
         ),
       );
+      print('good1');
+      print(response.statusCode);
 
       if (response.statusCode == 200) {
+        print('good');
+
         final List<dynamic> data = response.data;
         return data.map((json) => PlaceDTO.fromJson(json)).toList();
       } else {
