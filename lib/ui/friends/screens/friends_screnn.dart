@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -27,31 +26,10 @@ class SearchPeopleScreen extends StatefulWidget {
 }
 
 class _UserSearchScreenState extends State<SearchPeopleScreen> {
-  late UserSearchBloc _userSearchBloc;
   final TextEditingController _controller = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
 
-  bool _isSearchVisible = false;
   bool _isDropdownExpanded = false;
   String? _selectedUser;
-
-  void _toggleSearchVisibility() {
-    setState(() {
-      _isSearchVisible = !_isSearchVisible;
-      if (_isSearchVisible) {
-        _isDropdownExpanded = true;
-        _controller.clear();
-        _userSearchBloc.add(FetchUsersEvent(''));
-        Future.delayed(const Duration(milliseconds: 300), () {
-          _focusNode.requestFocus();
-        });
-      } else {
-        _isDropdownExpanded = false;
-        _focusNode.unfocus();
-      }
-    });
-  }
-
 
   @override
   void initState() {
@@ -147,29 +125,28 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
     if (s1 is OtherUserPointsLoadedState) {
       userPoints = s1.points;
     }
-    print('userPoints Lent: ${userPoints.length}');
     return Positioned(
       bottom: 0,
       left: 0,
       right: 0,
-      height: userPoints.isNotEmpty ? 140 : 0,
+      height: userPoints.isNotEmpty ? currentDeviceHeight * 0.15 : 0,
       child: Container(
         decoration: BoxDecoration(),
         child: PageView.builder(
           controller: _pageController,
           itemCount: userPoints.length,
           itemBuilder: (context, index) {
-            print('userPoints Lent2222: ${userPoints.length}');
             final point = userPoints[index];
             return GestureDetector(
               onTap: () {
-                _moveCameraToPoint(_mapController,
-                    userPoints[index].placeLocation, false, null);
+                BlocProvider.of<PointBloc>(context)
+                    .add(SelectPointEvent(index));
                 _panelController.open();
               },
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                padding: EdgeInsets.symmetric(
+                    horizontal: currentDeviceWidth * 0.02,
+                    vertical: currentDeviceHeight * 0.01),
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -177,14 +154,12 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.3),
-                        blurRadius: 8,
-                        spreadRadius: 2,
+                        blurRadius: 3,
+                        spreadRadius: 1,
                       ),
                     ],
                   ),
                   child: Container(
-                    width: 100,
-                    height: 100,
                     margin: const EdgeInsets.only(
                         top: 10, left: 15, bottom: 10, right: 15),
                     child: Row(
@@ -193,69 +168,44 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
                             ? ClipRRect(
                                 borderRadius: BorderRadius.circular(20),
                                 child: point.photosMain[0].isLocal()
-                                    ? Stack(children: [
-                                        Center(
-                                          child: CircularProgressIndicator(
-                                            valueColor:
-                                                const AlwaysStoppedAnimation<
-                                                    Color>(Colors.grey),
-                                            strokeWidth: 6.0,
-                                            backgroundColor:
-                                                Colors.grey.shade300,
-                                          ),
+                                    ? Container(
+                                        width: 100,
+                                        height: 100,
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey.shade100,
+                                          borderRadius:
+                                              BorderRadius.circular(20),
                                         ),
-                                        Container(
-                                            width: 100,
-                                            height: 100,
-                                            decoration: BoxDecoration(
-                                              color: Colors.grey.shade100,
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                            ),
-                                            child: Image.file(
-                                                File(point
-                                                    .photosMain[0].filePath),
-                                                fit: BoxFit.cover,
-                                                errorBuilder: (context, error,
-                                                        stackTrace) =>
-                                                    Container(
-                                                        color: Colors
-                                                            .grey.shade300,
-                                                        child: const Icon(Icons
-                                                            .image_not_supported))))
-                                      ])
-                                    : Stack(children: [
-                                        Center(
-                                          child: CircularProgressIndicator(
-                                            valueColor:
-                                                const AlwaysStoppedAnimation<
-                                                    Color>(Colors.grey),
-                                            strokeWidth: 6.0,
-                                            backgroundColor:
-                                                Colors.grey.shade300,
-                                          ),
-                                        ),
-                                        Container(
-                                          width: 100,
-                                          height: 100,
-                                          decoration: BoxDecoration(
-                                            color: Colors.grey.shade100,
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                          ),
-                                          child: Image.network(
-                                            point.photosMain[0].filePath,
+                                        child: Image.file(
+                                            File(point.photosMain[0].filePath),
                                             fit: BoxFit.cover,
-                                            errorBuilder:
-                                                (context, error, stackTrace) =>
-                                                    Container(
-                                              color: Colors.grey.shade300,
-                                              child: const Icon(
-                                                  Icons.image_not_supported),
-                                            ),
+                                            errorBuilder: (context, error,
+                                                    stackTrace) =>
+                                                Container(
+                                                    color: Colors.grey.shade300,
+                                                    child: const Icon(Icons
+                                                        .image_not_supported))))
+                                    : Container(
+                                        width: 100,
+                                        height: 100,
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey.shade100,
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
+                                        child: Image.network(
+                                          point.photosMain[0].filePath,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  Container(
+                                            color: Colors.grey.shade300,
+                                            child: const Icon(
+                                                Icons.image_not_supported),
                                           ),
                                         ),
-                                      ]))
+                                      ),
+                              )
                             : const Center(
                                 child: Icon(
                                   Icons.image,
@@ -277,8 +227,7 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
                                   color: Colors.black87,
                                 ),
                                 softWrap: true,
-                                overflow: TextOverflow
-                                    .visible,
+                                overflow: TextOverflow.visible,
                               ),
                               Expanded(
                                   child: Text(
@@ -291,8 +240,7 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
                                 ),
                                 softWrap: true,
                                 maxLines: 1,
-                                overflow: TextOverflow
-                                    .ellipsis,
+                                overflow: TextOverflow.ellipsis,
                               )),
                             ],
                           ),
@@ -313,6 +261,9 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
       ),
     );
   }
+
+  double currentDeviceHeight = 0;
+  double currentDeviceWidth = 0;
 
   Place? _getPointForPanel(PointState state) {
     if (state is PointsLoadedState) {
@@ -344,183 +295,189 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
     return const SizedBox.shrink();
   }
 
+  int currentPage = 0;
+
   Widget _buildSlidingPanel(OtherUserPointsLoadedState state) {
-    final point = state.points[state.selectedIndex];
+    Place point = state.points[state.selectedIndex];
     final nameController = TextEditingController(text: point.name ?? '');
     final descriptionController =
         TextEditingController(text: point.description ?? '');
-    return Container(
-        decoration: const BoxDecoration(
-          borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(25), topRight: Radius.circular(25)),
-          color: Colors.white,
+    return ClipRRect(
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
         ),
-        child: Stack(
-          children: [
-            StatefulBuilder(
-              builder: (context, setState) {
-                return GestureDetector(
-                  onVerticalDragEnd: (details) {
-                    if (_panelController.isAttached &&
-                        details.primaryVelocity! > 0) {
-                      _panelController.close();
-                    }
-                  },
-                  child: SingleChildScrollView(
-                      physics: ClampingScrollPhysics(),
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                            left: 16.0, right: 16.0, top: 20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Container(
+          color: Colors.white,
+          child: Stack(
+            children: [
+              StatefulBuilder(
+                builder: (context, setState) {
+                  return GestureDetector(
+                    onVerticalDragEnd: (details) {
+                      if (_panelController.isAttached &&
+                          details.primaryVelocity! > 0) {
+                        _panelController.close();
+                      }
+                    },
+                    child: Column(
+                      children: [
+                        Stack(
                           children: [
-                            Stack(
-                              children: [
-                                SizedBox(
-                                  height: 200,
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: Image.network(
-                                      'https://static-maps.yandex.ru/1.x/?ll=${point?.placeLocation.longitude},${point?.placeLocation.latitude}&z=14&l=map&size=500,200',
-                                      fit: BoxFit.contain,
+                            SizedBox(
+                              height: MediaQuery.sizeOf(context).height * 0.3,
+                              width: MediaQuery.sizeOf(context).width,
+                              child: point!.photosMain.isEmpty
+                                  ? const Center(
+                                      child: Icon(
+                                        Icons.image,
+                                        size: 100,
+                                      ),
+                                    )
+                                  : PageView.builder(
+                                      itemCount: point.photosMain.length,
+                                      onPageChanged: (index) {
+                                        setState(() {
+                                          currentPage = index;
+                                        });
+                                      },
+                                      itemBuilder: (context, index) {
+                                        return point.photosMain[index].isLocal()
+                                            ? Image.file(
+                                                File(point.photosMain[index]
+                                                    .filePath),
+                                                fit: BoxFit.cover,
+                                              )
+                                            : Image.network(
+                                                point
+                                                    .photosMain[index].filePath,
+                                                fit: BoxFit.cover,
+                                              );
+                                      },
+                                    ),
+                            ),
+                            Positioned(
+                              bottom: 30,
+                              left: 80,
+                              right: 80,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: List.generate(
+                                  point.photosMain.length ?? 0,
+                                  (index) => AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    margin: const EdgeInsets.symmetric(
+                                        horizontal: 4),
+                                    width: currentPage == index ? 12 : 8,
+                                    height: currentPage == index ? 12 : 8,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: currentPage == index
+                                          ? Colors.black
+                                          : Colors.grey.shade400,
                                     ),
                                   ),
                                 ),
-                                Container(
-                                  height: 140,
-                                  alignment: Alignment.center,
-                                  child: Image.asset(
-                                    'assets/icons/location.png',
-                                    width: 60,
-                                    height: 60,
-                                  ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Expanded(
+                          child: Container(
+                            transform: Matrix4.translationValues(0,
+                                -MediaQuery.sizeOf(context).height * 0.01, 0),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(25),
+                                topRight: Radius.circular(25),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  blurRadius: 10,
+                                  spreadRadius: 2,
+                                  offset: const Offset(0, -4),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16),
-                            TextField(
-                              controller: nameController,
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 25,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              decoration: InputDecoration(
-                                hintText: 'Добавьте название...',
-                                filled: true,
-                                fillColor: Colors.grey.shade100,
-                                contentPadding: const EdgeInsets.all(12),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide.none,
-                                ),
-                              ),
-                              minLines: 1,
-                              maxLines: 2,
-                              maxLength: 40,
-                            ),
-                            const SizedBox(height: 16),
-                            TextField(
-                              controller: descriptionController,
-                              scrollPhysics:
-                                  const NeverScrollableScrollPhysics(),
-                              decoration: InputDecoration(
-                                hintText: 'Добавьте описание...',
-                                filled: true,
-                                fillColor: Colors.grey.shade100,
-                                contentPadding: EdgeInsets.all(12),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide.none,
-                                ),
-                              ),
-                              minLines: 1,
-                              maxLines: 9,
-                              maxLength: 750,
-                            ),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'Фотографии',
-                              style: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 8),
-                            SizedBox(
-                              height: 100,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: point!.photosMain.length,
-                                itemBuilder: (context, index) {
-                                  return Container(
-                                    width: 100,
-                                    margin: EdgeInsets.only(right: 8),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12),
-                                      color: Colors.grey.shade200,
+                            child: Padding(
+                              padding: const EdgeInsets.all(15),
+                              child: Column(
+                                children: [
+                                  TextField(
+                                    controller: nameController,
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 25,
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: point.photosMain[index].isLocal()
-                                          ? Image.file(
-                                              File(point
-                                                  .photosMain[index].filePath),
-                                              fit: BoxFit.cover,
-                                              errorBuilder: (context, error,
-                                                      stackTrace) =>
-                                                  Container(
-                                                      color:
-                                                          Colors.grey.shade300,
-                                                      child: const Icon(Icons
-                                                          .image_not_supported)))
-                                          : Image.network(
-                                              point.photosMain[index].filePath,
-                                              fit: BoxFit.cover,
-                                              errorBuilder: (context, error,
-                                                      stackTrace) =>
-                                                  Container(
-                                                color: Colors.grey.shade300,
-                                                child: const Icon(
-                                                    Icons.image_not_supported),
-                                              ),
-                                            ),
+                                    decoration: InputDecoration(
+                                      hintText: 'Добавьте название...',
+                                      filled: true,
+                                      fillColor: Colors.grey.shade100,
+                                      contentPadding: const EdgeInsets.all(12),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: BorderSide.none,
+                                      ),
                                     ),
-                                  );
-                                },
+                                    minLines: 1,
+                                    maxLines: 2,
+                                    maxLength: 40,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  TextField(
+                                    controller: descriptionController,
+                                    scrollPhysics:
+                                        const NeverScrollableScrollPhysics(),
+                                    decoration: InputDecoration(
+                                      hintText: 'Добавьте описание...',
+                                      filled: true,
+                                      fillColor: Colors.grey.shade100,
+                                      contentPadding: EdgeInsets.all(12),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                    ),
+                                    minLines: 1,
+                                    maxLines: 9,
+                                    maxLength: 750,
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(height: 16),
-                          ],
+                          ),
                         ),
-                      )),
-                );
-              },
-            ),
-            Container(
-              width: double.infinity,
-              height: 30,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(25),
-                    topLeft: Radius.circular(25)),
+                      ],
+                    ),
+                  );
+                },
               ),
-              child: Center(
-                child: Container(
-                  width: 70,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: Colors.grey,
-                    borderRadius: BorderRadius.circular(10),
+              SizedBox(
+                width: double.infinity,
+                height: 40,
+                child: Center(
+                  child: Container(
+                    width: 50,
+                    height: 7,
+                    decoration: BoxDecoration(
+                      color: Colors.black45,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ));
   }
 
   @override
   Widget build(BuildContext context) {
+    currentDeviceHeight = MediaQuery.sizeOf(context).height;
+    currentDeviceWidth = MediaQuery.sizeOf(context).width;
     return Scaffold(
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 2,
@@ -547,12 +504,7 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
         ],
       ),
       appBar: AppBar(
-        title: const Text('Поиск людей'),
-        leading: BackButton(
-          onPressed: () {
-            Navigator.pushNamed(context, '/map');
-          },
-        ),
+        title: Text('Search'),
       ),
       body: Stack(
         children: [
@@ -566,9 +518,8 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
             },
           ),
           Positioned(
-            top: 16.0,
-            left: 16.0,
-            right: 16.0,
+            left: 0,
+            right: 0,
             child: GestureDetector(
               onTap: _toggleDropdown,
               child: Column(
@@ -576,21 +527,19 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(10.0),
-                      color: Colors.white,
-                    ),
+                    color: Colors.white,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
+                            child: SizedBox(
+                          height: currentDeviceHeight * 0.05,
                           child: _isDropdownExpanded
                               ? TextField(
                                   controller: _controller,
                                   autofocus: true,
                                   decoration: const InputDecoration(
-                                    hintText: 'Search for a user...',
+                                    hintText: 'Начните вводить имя...',
                                     border: InputBorder.none,
                                   ),
                                   onChanged: (value) {
@@ -603,7 +552,7 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
                                   style: const TextStyle(fontSize: 16.0),
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                        ),
+                        )),
                         Icon(
                           _isDropdownExpanded
                               ? Icons.arrow_drop_up
@@ -616,27 +565,31 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
                     BlocBuilder<UserSearchBloc, UserSearchState>(
                       builder: (context, state) {
                         if (state is UserSearchLoadingState) {
-                          return const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 16.0),
-                            child: Center(
+                          return Container(
+                           height: currentDeviceHeight,
+                            color: Colors.white,
+                            child: const Center(
                               child: CircularProgressIndicator(),
                             ),
                           );
                         } else if (state is UserSearchLoadedState) {
                           if (state.users.isEmpty) {
-                            return const Padding(
-                              padding: EdgeInsets.all(16.0),
-                              child: Text('No users found.'),
+                            return Container(
+                              color: Colors.white,
+                              width: double.infinity,
+                              child: const Padding(
+                                  padding: EdgeInsets.all(10),
+                                  child: Text(
+                                    'Пользователь не найден',
+                                    style: TextStyle(
+                                        backgroundColor: Colors.white),
+                                  )),
                             );
                           }
                           return Container(
-                            constraints: const BoxConstraints(maxHeight: 200),
-                            margin: const EdgeInsets.only(top: 8.0),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey),
-                              borderRadius: BorderRadius.circular(10.0),
-                              color: Colors.white,
-                            ),
+                            constraints:
+                                BoxConstraints(maxHeight: currentDeviceHeight),
+                            color: Colors.white,
                             child: ListView.builder(
                               itemCount: state.users.length,
                               itemBuilder: (context, index) {
@@ -645,9 +598,6 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
                                   title: Text(user),
                                   onTap: () {
                                     setState(() {
-                                      print('tet');
-                                      print(user);
-
                                       BlocProvider.of<PointBloc>(context).add(
                                           OtherUserPointsLoadingEvent(
                                               widget.currentUser.jwt, user));
@@ -660,12 +610,16 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
                             ),
                           );
                         } else if (state is UserSearchErrorState) {
-                          return Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Text(
-                              state.message,
-                              style: const TextStyle(color: Colors.red),
-                            ),
+                          return Container(
+                            color: Colors.white,
+                            width: double.infinity,
+                            child: const Padding(
+                                padding: EdgeInsets.all(10),
+                                child: Text(
+                                  'Пользователь не найден',
+                                  style:
+                                      TextStyle(backgroundColor: Colors.white),
+                                )),
                           );
                         }
 
@@ -679,8 +633,7 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
           BlocBuilder<PointBloc, PointState>(
             builder: (context, pointState) {
               final points = _extractPoints(pointState);
-              return    _slidingUpPanelBuilder(pointState);
-
+              return _slidingUpPanelBuilder(pointState);
             },
           ),
         ],

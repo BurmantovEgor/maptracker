@@ -4,6 +4,8 @@ abstract class PointState {}
 
 class PointsInitialState extends PointState {}
 
+class PointsLoadingState extends PointState {}
+
 class PointsLoadedState extends PointState {
   final List<Place> points;
   final int selectedIndex;
@@ -16,8 +18,6 @@ class PointsLoadedState extends PointState {
     this.selectedPoint,
     this.temporaryPoint,
   });
-
-
 }
 
 class OtherUserPointsLoadedState extends PointState {
@@ -28,6 +28,4 @@ class OtherUserPointsLoadedState extends PointState {
     required this.points,
     this.selectedIndex = 0,
   });
-
-
 }

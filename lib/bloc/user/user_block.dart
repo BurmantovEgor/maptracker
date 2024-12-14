@@ -21,14 +21,15 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     emit(UserLoadingState());
     try {
       final user = await apiService.registerUser(event);
-
       if (user.id != -1) {
         emit(UserLoadedState(user: user));
       } else {
         emit(UserErrorState(error: "Registration failed"));
+        emit(UserInitialState());
       }
     } catch (e) {
       emit(UserErrorState(error: e.toString()));
+      emit(UserInitialState());
     }
   }
 
@@ -44,14 +45,12 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         await prefs.setString('password', event.password);
         emit(UserLoadedState(user: user));
       } else {
-        final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-        await Future.delayed(Duration(milliseconds: 500));
-
         emit(UserErrorState(error: ""));
+        emit(UserInitialState());
       }
     } catch (e) {
       emit(UserErrorState(error: e.toString()));
+      emit(UserInitialState());
     }
   }
 

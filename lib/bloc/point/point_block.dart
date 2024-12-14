@@ -14,9 +14,8 @@ class PointBloc extends Bloc<PointEvent, PointState> {
   final PlaceService apiService;
 
   PointBloc(this.apiService) : super(PointsInitialState()) {
-
-
     on<LoadPointsEvent>((event, emit) async {
+      emit(PointsLoadingState());
       if (event.jwt.trim().isNotEmpty) {
         _points = await apiService.getPlaces(event.jwt);
         print('userPoints: ${_points.length}');
@@ -37,7 +36,7 @@ class PointBloc extends Bloc<PointEvent, PointState> {
     on<OtherUserPointsLoadingEvent>((event, emit) async {
       if (event.jwt.trim().isNotEmpty) {
         print('testGetUser');
-        _points = await apiService.getUserPlaces(event.userId,event.jwt);
+        _points = await apiService.getUserPlaces(event.userId, event.jwt);
         print('userPoints: ${_points.length}');
         final mappedPoints = PlaceMapper.fromPlaceRepoListToPlaceList(_points);
         print('mappedPoints: ${mappedPoints.length}');
@@ -54,7 +53,6 @@ class PointBloc extends Bloc<PointEvent, PointState> {
               currentState.temporaryPoint!.description != event.description)) {
         final updatedTemporaryPoint = currentState.temporaryPoint!.copyWith(
             name: event.name, description: event.description, photosMain: []);
-
 
         emit(PointsLoadedState(
           points: currentState.points,
@@ -101,7 +99,7 @@ class PointBloc extends Bloc<PointEvent, PointState> {
       ));
     });
 
-    on<UpdatePointEvent>((event, emit)  async {
+    on<UpdatePointEvent>((event, emit) async {
       final currentState = state as PointsLoadedState;
       if (currentState.points.contains(event.updatedPoint)) return;
 
@@ -110,8 +108,6 @@ class PointBloc extends Bloc<PointEvent, PointState> {
                 event.updatedPoint.placeLocation.latitude &&
             point.placeLocation.longitude ==
                 event.updatedPoint.placeLocation.longitude) {
-
-
           return event.updatedPoint;
         }
 
@@ -134,7 +130,6 @@ class PointBloc extends Bloc<PointEvent, PointState> {
           photosMain: currentState.temporaryPoint!.photosMain);
       final updatedPoints = List<Place>.from(currentState.points)
         ..add(newPoint);
-
 
       final placeDTO = PlaceMapper.fromPlaceToPlaceCreateDTO(newPoint);
       await apiService.addPlace(placeDTO, event.currentUser.jwt);
