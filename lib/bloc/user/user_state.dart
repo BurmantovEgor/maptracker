@@ -9,6 +9,10 @@ abstract class UserState extends Equatable {
 }
 
 class UserInitialState extends UserState {}
+class UserRegisteredState extends UserState {
+  final User user;
+  UserRegisteredState({required this.user});
+}
 
 class UserLoadingState extends UserState {}
 

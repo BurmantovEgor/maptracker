@@ -10,6 +10,10 @@ import '../../../bloc/user/user_event.dart';
 import '../../../data/models/user.dart';
 
 class SettingsScreen extends StatelessWidget {
+  final User currentUser;
+
+  const SettingsScreen({required this.currentUser, super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -45,7 +49,7 @@ class SettingsScreen extends StatelessWidget {
         ElevatedButton(
           onPressed: () async {
             final SharedPreferences prefs =
-                await SharedPreferences.getInstance();
+            await SharedPreferences.getInstance();
             prefs.clear();
             final pointBloc = context.read<PointBloc>();
             pointBloc.add(LoadPointsEvent(''));
@@ -64,7 +68,7 @@ class SettingsScreen extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15),
             ),
-            padding: EdgeInsets.symmetric(vertical: 15),
+            padding: const EdgeInsets.symmetric(vertical: 15),
             elevation: 5,
           ),
           child: const Text(
@@ -72,35 +76,25 @@ class SettingsScreen extends StatelessWidget {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
-            ElevatedButton(
-              onPressed: () async {
-                UserBloc userBloc = context.read<UserBloc>();
-                userBloc.add(
-                    LoginUserEvent(email: 'egor@exa1mple.com', password: 'string'));
-                Navigator.pop(
-                    context,
-                    User(
-                        id: 0,
-                        email: 'use123@exa1mple123.com',
-                        username: '',
-                        isAuthorized: true,
-                        jwt:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6ImM0NDk4NTEzLTNjZmMtNGYzNS1iYTFlLWQzMzlhY2ZmMWVhZCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJzdHJpbmcxMTEyMyIsImV4cCI6MTczMzkyMjE5NCwiaXNzIjoibWVtZW1lbWUiLCJhdWQiOiJjbGllbnRzIn0.FYw0FiEuqXkMNKDc8aje-F5oHyKTHVmSNGtb0NCoR10'));
-
-              },
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.grey.shade600,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                padding: EdgeInsets.symmetric(vertical: 15),
-                elevation: 5,
-              ),
-              child: const Text(
-                'Войти',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
+        ElevatedButton(
+          onPressed: () async {
+            UserBloc userBloc = context.read<UserBloc>();
+            userBloc.add(LoginUserEvent(email: 'egor@exa1mple.com', password: 'string'));
+          },
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.grey.shade600,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
             ),
+            padding: EdgeInsets.symmetric(vertical: 15),
+            elevation: 5,
+          ),
+          child: const Text(
+            'Войти',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+        ),
       ])),
     );
   }

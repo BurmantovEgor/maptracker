@@ -52,8 +52,7 @@ class MyApp extends StatelessWidget {
         initialRoute: '/map',
         routes: {
           '/map': (context) => MapScreen(),
-          '/settings': (context) => SettingsScreen(),
-          //'/search': (context) => SearchPeopleScreen(),
+//          //'/search': (context) => SearchPeopleScreen(),
         },
       ),
     );

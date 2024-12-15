@@ -13,7 +13,7 @@ class UserService {
       : dio = Dio(
           BaseOptions(
             baseUrl: "https://192.168.3.38:7042",
-           // baseUrl: "https://192.168.3.10:7042",
+            // baseUrl: "https://192.168.3.10:7042",
           ),
         ) {
     (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =
@@ -26,7 +26,6 @@ class UserService {
 
   Future<List<String>> searchUser(FetchUsersEvent event) async {
     try {
-
       print('поиск пошел');
       final response = await dio.get(
         '/api/users/search?username=${event.query}',
@@ -35,7 +34,7 @@ class UserService {
             'Authorization': 'Bearer ${event.jwt}',
           },
         ),
-      //  queryParameters: {'username': event.query},
+        //  queryParameters: {'username': event.query},
       );
       List<String> users = [];
       if (response.statusCode == 200) {
@@ -50,6 +49,7 @@ class UserService {
       throw Exception('Error while fetching data');
     }
   }
+
   Future<User> registerUser(RegisterUserEvent event) async {
     try {
       final response = await dio.post(
@@ -81,6 +81,7 @@ class UserService {
       throw Exception('Error while fetching data');
     }
   }
+
   Future<User> loginUser(LoginUserEvent event) async {
     try {
       print('email: ${event.email} password: ${event.password}');
@@ -88,8 +89,8 @@ class UserService {
         final response = await dio.post(
           '/api/users/login',
           data: {
-            "email": event.email,
-            "password": event.password,
+            "email": event.email.trim(),
+            "password": event.password.trim(),
           },
           options: Options(
             headers: {
@@ -99,13 +100,17 @@ class UserService {
         );
         print('responceCode: ${response.statusCode}');
         if (response.statusCode == 200) {
+          print('ya v 200');
           final String token = response.data['token'];
+          print('ya v 2002');
           final tempUser = User(
               id: 0,
               email: event.email,
               username: "test",
               jwt: token,
               isAuthorized: true);
+          print('ya v 2003');
+
           return tempUser;
         } else {
           return User(

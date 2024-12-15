@@ -23,5 +23,6 @@ class LoginUserEvent extends UserEvent {
 }
 
 class LogoutUserEvent extends UserEvent {}
+class InitialUserEvent extends UserEvent {}
 
 class LoadUserFromStorageEvent extends UserEvent {}

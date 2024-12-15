@@ -13,16 +13,17 @@ class UserBloc extends Bloc<UserEvent, UserState> {
   UserBloc(this.apiService) : super(UserInitialState()) {
     on<RegisterUserEvent>(_onRegisterUser);
     on<LoginUserEvent>(_onLoginUser);
-    /* on<LogoutUserEvent>(_onLogoutUser);*/
+    on<LogoutUserEvent>(_onLogoutUser);
+    on<InitialUserEvent>(_onInditalUser);
   }
 
-  Future<void> _onRegisterUser(
-      RegisterUserEvent event, Emitter<UserState> emit) async {
+  Future<void> _onRegisterUser(RegisterUserEvent event, Emitter<UserState> emit) async {
     emit(UserLoadingState());
     try {
       final user = await apiService.registerUser(event);
       if (user.id != -1) {
-        emit(UserLoadedState(user: user));
+        emit(UserRegisteredState(user: user));
+
       } else {
         emit(UserErrorState(error: "Registration failed"));
         emit(UserInitialState());
@@ -33,17 +34,29 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     }
   }
 
+  Future<void> _onInditalUser(
+      InitialUserEvent event,
+      Emitter<UserState> emit)
+  async {
+    emit(UserInitialState());
+  }
+
+
   Future<void> _onLoginUser(
       LoginUserEvent event, Emitter<UserState> emit) async {
     emit(UserLoadingState());
     try {
-      final user = await apiService.loginUser(event);
 
+      final user = await apiService.loginUser(event);
+      print('loggedUser');
+      print(user.id);
+      print(user.email);
       if (user.id != -1) {
         final SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('email', user.email);
         await prefs.setString('password', event.password);
         emit(UserLoadedState(user: user));
+      //  emit(UserInitialState());
       } else {
         emit(UserErrorState(error: ""));
         emit(UserInitialState());
@@ -54,7 +67,10 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     }
   }
 
-/*Future<void> _onLogoutUser(LogoutUserEvent event, Emitter<UserState> emit) async {
+  Future<void> _onLogoutUser(
+      LogoutUserEvent event, Emitter<UserState> emit) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.clear();
     emit(UserLoggedOutState());
-  }*/
+  }
 }

@@ -5,14 +5,21 @@ class sliding_up_panel extends StatefulWidget {
   sliding_up_panel({super.key,  required this.controller});
 
   PanelController controller = new PanelController();
-
   @override
   State<sliding_up_panel> createState() => _sliding_up_panelState();
 }
 
 class _sliding_up_panelState extends State<sliding_up_panel> {
+
   @override
   Widget build(BuildContext context) {
+
+    TextEditingController nameController = TextEditingController();
+    TextEditingController emailContoller = TextEditingController();
+    TextEditingController passwordContoller = TextEditingController();
+
+
+
     return SlidingUpPanel(
       maxHeight: MediaQuery.sizeOf(context).height * 0.75,
       minHeight: 0,
@@ -25,11 +32,27 @@ class _sliding_up_panelState extends State<sliding_up_panel> {
         child: Column(
           children: [
             TextField(
+              controller: nameController,
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 25,
+                fontWeight: FontWeight.bold,
+              ),
               decoration: InputDecoration(
-                  fillColor: Colors.green,
-                  border: OutlineInputBorder(
-                      borderSide: BorderSide(width: 10),
-                      borderRadius: BorderRadius.circular(10))),
+                hintText: 'Добавьте название...',
+                filled: true,
+                fillColor: Colors.grey.shade100,
+                contentPadding:
+                const EdgeInsets.all(12),
+                border: OutlineInputBorder(
+                  borderRadius:
+                  BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              minLines: 1,
+              maxLines: 2,
+              maxLength: 40,
             ),
             TextField(
               decoration: InputDecoration(
