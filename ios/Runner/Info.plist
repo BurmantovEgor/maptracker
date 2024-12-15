@@ -2,6 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Мы используем вашу фотогалерею для выбора изображений.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Мы используем вашу камеру для съемки фото.</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>Мы добавляем изображения в вашу фотогалерею.</string>
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>Для отображения вашей геопозиции на карте.</string>
     <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>

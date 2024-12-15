@@ -15,8 +15,8 @@ class PlaceService {
   PlaceService()
       : dio = Dio(
           BaseOptions(
-         //   baseUrl: "https://192.168.3.38:7042",
-            baseUrl: "https://192.168.3.10:7042",
+            baseUrl: "https://192.168.3.38:7042",
+         //   baseUrl: "https://192.168.3.10:7042",
           ),
         ) {
     (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =
@@ -92,10 +92,10 @@ class PlaceService {
       if (placeCreateDTO.description.trim().isNotEmpty) {
         formData.fields
             .add(MapEntry('description', placeCreateDTO.description.trim()));
-      } else {
+      } /*else {
         formData.fields
             .add(const MapEntry('description', 'Описание отсутствует'));
-      }
+      }*/
 
       for (int i = 0; i < placeCreateDTO.photos.length; i++) {
         var photo = placeCreateDTO.photos[i];

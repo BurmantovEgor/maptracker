@@ -12,8 +12,8 @@ class UserService {
   UserService()
       : dio = Dio(
           BaseOptions(
-           // baseUrl: "https://192.168.3.38:7042",
-            baseUrl: "https://192.168.3.10:7042",
+            baseUrl: "https://192.168.3.38:7042",
+           // baseUrl: "https://192.168.3.10:7042",
           ),
         ) {
     (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =
@@ -29,7 +29,7 @@ class UserService {
 
       print('поиск пошел');
       final response = await dio.get(
-        'https://192.168.3.10:7042/api/users/search?username=${event.query}',
+        '/api/users/search?username=${event.query}',
         options: Options(
           headers: {
             'Authorization': 'Bearer ${event.jwt}',

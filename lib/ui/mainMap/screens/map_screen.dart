@@ -613,403 +613,422 @@ class _MapScreenState extends State<MapScreen> {
     final nameController = TextEditingController(text: point?.name ?? '');
     final descriptionController =
         TextEditingController(text: point?.description ?? '');
-    return ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20), // Adjust this value as needed
-          topRight: Radius.circular(20), // Adjust this value as needed
-        ),
-        child: Container(
-          color: Colors.white,
-          child: Stack(
-            children: [
-              StatefulBuilder(
-                builder: (context, setState) {
-                  return GestureDetector(
-                    onVerticalDragEnd: (details) {
-                      if (_panelController.isAttached &&
-                          details.primaryVelocity! > 0) {
-                        _panelController.close();
-                      }
-                    },
-                    child: Column(
-                      children: [
-                        Stack(
+    return  ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20), // Adjust this value as needed
+              topRight: Radius.circular(20), // Adjust this value as needed
+            ),
+            child: Container(
+              color: Colors.white,
+              child: Stack(
+                children: [
+                  StatefulBuilder(
+                    builder: (context, setState) {
+                      return GestureDetector(
+                        onVerticalDragEnd: (details) {
+                          if (_panelController.isAttached &&
+                              details.primaryVelocity! > 0) {
+                            _panelController.close();
+                          }
+                        },
+                        child: Column(
                           children: [
-                            SizedBox(
-                              height: MediaQuery.sizeOf(context).height * 0.3,
-                              width: MediaQuery.sizeOf(context).width,
-                              child: point!.photosMain.isEmpty
-                                  ? const Center(
-                                      child: Icon(
-                                        Icons.image,
-                                        size: 100,
-                                      ),
-                                    )
-                                  : PageView.builder(
-                                      itemCount: point.photosMain.length,
-                                      onPageChanged: (index) {
-                                        setState(() {
-                                          currentPage = index;
-                                        });
-                                      },
-                                      itemBuilder: (context, index) {
-                                        return point.photosMain[index].isLocal()
-                                            ? Image.file(
-                                                File(point.photosMain[index]
-                                                    .filePath),
-                                                fit: BoxFit.cover,
-                                              )
-                                            : Image.network(
-                                                point
-                                                    .photosMain[index].filePath,
-                                                fit: BoxFit.cover,
-                                              );
-                                      },
-                                    ),
-                            ),
-                            Visibility(
-                                visible: point.photosMain.isNotEmpty,
-                                child: Positioned(
-                                  left: 16,
-                                  bottom: 30,
-                                  child: FloatingActionButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        point.photosMain.removeAt(currentPage);
-                                        currentPage = 0;
-                                      });
-                                    },
-                                    mini: true,
-                                    backgroundColor: Colors.white,
-                                    child: const Icon(
-                                      Icons.delete,
-                                      color: Colors.red,
-                                    ),
-                                  ),
-                                )),
-                            Positioned(
-                              bottom: 30,
-                              left: 80,
-                              right: 80,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: List.generate(
-                                  point.photosMain.length ?? 0,
-                                  (index) => AnimatedContainer(
-                                    duration: const Duration(milliseconds: 200),
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal: 4),
-                                    width: currentPage == index ? 12 : 8,
-                                    height: currentPage == index ? 12 : 8,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: currentPage == index
-                                          ? Colors.black
-                                          : Colors.grey.shade400,
-                                    ),
-                                  ),
+                            Stack(
+                              children: [
+                                SizedBox(
+                                  height:
+                                      MediaQuery.sizeOf(context).height * 0.3,
+                                  width: MediaQuery.sizeOf(context).width,
+                                  child: point!.photosMain.isEmpty
+                                      ? const Center(
+                                          child: Icon(
+                                            Icons.image,
+                                            size: 100,
+                                          ),
+                                        )
+                                      : PageView.builder(
+                                          itemCount: point.photosMain.length,
+                                          onPageChanged: (index) {
+                                            setState(() {
+                                              currentPage = index;
+                                            });
+                                          },
+                                          itemBuilder: (context, index) {
+                                            return point.photosMain[index]
+                                                    .isLocal()
+                                                ? Image.file(
+                                                    File(point.photosMain[index]
+                                                        .filePath),
+                                                    fit: BoxFit.cover,
+                                                  )
+                                                : Image.network(
+                                                    point.photosMain[index]
+                                                        .filePath,
+                                                    fit: BoxFit.cover,
+                                                  );
+                                          },
+                                        ),
                                 ),
-                              ),
-                            ),
-                            Visibility(
-                                visible: point.photosMain.length < 5,
-                                child: Positioned(
-                                  right: 16,
-                                  bottom: 30,
-                                  child: FloatingActionButton(
-                                    onPressed: () async {
-                                      final pickedFile =
-                                          await _picker.pickMultiImage();
-                                      if (pickedFile.isNotEmpty) {
-                                        if (pickedFile.length +
-                                                point.photosMain.length >
-                                            5) {
-                                          Fluttertoast.showToast(
-                                            msg:
-                                                "Можно добавить только 5 фотографий для одной точки",
-                                            toastLength: Toast.LENGTH_SHORT,
-                                            gravity: ToastGravity.BOTTOM,
-                                            timeInSecForIosWeb: 1,
-                                            backgroundColor: Colors.black,
-                                            textColor: Colors.white,
-                                            fontSize: 16.0,
-                                          );
-                                        }
-                                        setState(() {
-                                          point.photosMain.addAll(
-                                              PhotoMapper.fromXFiles(pickedFile
-                                                  .take(5 -
-                                                      point.photosMain.length)
-                                                  .toList()));
-                                        });
-                                      }
-                                    },
-                                    mini: true, // Smaller circular button
-                                    backgroundColor: Colors.white,
-                                    child: const Icon(
-                                      Icons.add,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                )),
-                          ],
-                        ),
-                        Expanded(
-                          child: Container(
-                            transform: Matrix4.translationValues(0,
-                                -MediaQuery.sizeOf(context).height * 0.01, 0),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(25),
-                                topRight: Radius.circular(25),
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
-                                  blurRadius: 10,
-                                  spreadRadius: 2,
-                                  offset: const Offset(0, -4),
-                                ),
-                              ],
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(15),
-                              child: Column(
-                                children: [
-                                  TextField(
-                                    controller: nameController,
-                                    style: const TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 25,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    decoration: InputDecoration(
-                                      hintText: 'Добавьте название...',
-                                      filled: true,
-                                      fillColor: Colors.grey.shade100,
-                                      contentPadding: const EdgeInsets.all(12),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide.none,
-                                      ),
-                                    ),
-                                    minLines: 1,
-                                    maxLines: 2,
-                                    maxLength: 40,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  TextField(
-                                    controller: descriptionController,
-                                    scrollPhysics:
-                                        const NeverScrollableScrollPhysics(),
-                                    decoration: InputDecoration(
-                                      hintText: 'Добавьте описание...',
-                                      filled: true,
-                                      fillColor: Colors.grey.shade100,
-                                      contentPadding: EdgeInsets.all(12),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide.none,
-                                      ),
-                                    ),
-                                    minLines: 1,
-                                    maxLines: 9,
-                                    maxLength: 750,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Spacer(),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      FloatingActionButton(
-                                        backgroundColor: Colors.grey.shade400,
-                                        elevation: 0,
+                                Visibility(
+                                    visible: point.photosMain.isNotEmpty,
+                                    child: Positioned(
+                                      left: 16,
+                                      bottom: 30,
+                                      child: FloatingActionButton(
                                         onPressed: () {
-                                          if (isTemporary) {
-                                            pointBloc.add(
-                                                CancelTemporaryPointEvent());
-                                          } else {
-                                            pointBloc.add(RemovePointEvent());
-                                          }
-                                          _panelController.close();
+                                          setState(() {
+                                            point.photosMain
+                                                .removeAt(currentPage);
+                                            currentPage = 0;
+                                          });
                                         },
+                                        mini: true,
+                                        backgroundColor: Colors.white,
                                         child: const Icon(
                                           Icons.delete,
-                                          color: Colors.black,
-                                          size: 25,
+                                          color: Colors.red,
                                         ),
                                       ),
-                                      FloatingActionButton(
-                                        backgroundColor: Colors.grey.shade400,
-                                        elevation: 0,
-                                        onPressed: () {
-                                          if (nameController.text.trim() ==
-                                              '') {
-                                            Fluttertoast.showToast(
-                                              msg:
-                                                  "Необходимо добавить название точки",
-                                              toastLength: Toast.LENGTH_SHORT,
-                                              gravity: ToastGravity.BOTTOM,
-                                              timeInSecForIosWeb: 1,
-                                              backgroundColor: Colors.black,
-                                              textColor: Colors.white,
-                                              fontSize: 16.0,
-                                            );
-                                          } else {
-                                            if (isTemporary) {
-                                              pointBloc.add(
-                                                  SaveTemporaryPointEvent(
-                                                      point!.copyWith(
-                                                          name: nameController
-                                                              .text,
-                                                          description:
-                                                              descriptionController
-                                                                  .text,
-                                                          photosMain:
-                                                              point.photosMain),
-                                                      currentUser));
-                                            } else {
-                                              pointBloc.add(
-                                                UpdatePointEvent(
-                                                    point!.copyWith(
-                                                        name:
-                                                            nameController.text,
-                                                        description:
-                                                            descriptionController
-                                                                .text,
-                                                        photosMain:
-                                                            point.photosMain),
-                                                    currentUser),
+                                    )),
+                                Positioned(
+                                  bottom: 30,
+                                  left: 80,
+                                  right: 80,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: List.generate(
+                                      point.photosMain.length ?? 0,
+                                      (index) => AnimatedContainer(
+                                        duration:
+                                            const Duration(milliseconds: 200),
+                                        margin: const EdgeInsets.symmetric(
+                                            horizontal: 4),
+                                        width: currentPage == index ? 12 : 8,
+                                        height: currentPage == index ? 12 : 8,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: currentPage == index
+                                              ? Colors.black
+                                              : Colors.grey.shade400,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Visibility(
+                                    visible: point.photosMain.length < 5,
+                                    child: Positioned(
+                                      right: 16,
+                                      bottom: 30,
+                                      child: FloatingActionButton(
+                                        onPressed: () async {
+                                          final pickedFile =
+                                              await _picker.pickMultiImage();
+                                          if (pickedFile.isNotEmpty) {
+                                            if (pickedFile.length +
+                                                    point.photosMain.length >
+                                                5) {
+                                              Fluttertoast.showToast(
+                                                msg:
+                                                    "Можно добавить только 5 фотографий для одной точки",
+                                                toastLength: Toast.LENGTH_SHORT,
+                                                gravity: ToastGravity.BOTTOM,
+                                                timeInSecForIosWeb: 1,
+                                                backgroundColor: Colors.black,
+                                                textColor: Colors.white,
+                                                fontSize: 16.0,
                                               );
                                             }
-                                            _panelController.close();
+                                            setState(() {
+                                              point.photosMain.addAll(
+                                                  PhotoMapper.fromXFiles(
+                                                      pickedFile
+                                                          .take(5 -
+                                                              point.photosMain
+                                                                  .length)
+                                                          .toList()));
+                                            });
                                           }
                                         },
+                                        mini: true, // Smaller circular button
+                                        backgroundColor: Colors.white,
                                         child: const Icon(
-                                          Icons.check,
-                                          color: Colors.black87,
-                                          size: 35,
+                                          Icons.add,
+                                          color: Colors.black,
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-              Visibility(
-                  visible: !isPanelOpen && isTemporary,
-                  child: Container(
-                    width: double.infinity,
-                    height: MediaQuery.sizeOf(context).height * 0.2,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(25),
-                          topLeft: Radius.circular(25)),
-                    ),
-                    child: !currentUser.isAuthorized
-                        ? Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(25),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 10,
-                                  spreadRadius: 2,
-                                ),
+                                    )),
                               ],
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 15),
-                              child: Column(
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
+                            Expanded(
+                              child: Container(
+                                transform: Matrix4.translationValues(
+                                    0,
+                                    -MediaQuery.sizeOf(context).height * 0.01,
+                                    0),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(25),
+                                    topRight: Radius.circular(25),
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      blurRadius: 10,
+                                      spreadRadius: 2,
+                                      offset: const Offset(0, -4),
+                                    ),
+                                  ],
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(15),
+                                  child: Column(
                                     children: [
-                                      Expanded(
-                                        child: ElevatedButton(
-                                          onPressed: () async {
-                                            final result = await Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      SettingsScreen()),
-                                            );
-                                            if (result != null &&
-                                                result is User) {
-                                              currentUser = result;
-                                            }
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            foregroundColor: Colors.white,
-                                            backgroundColor:
-                                                Colors.grey.shade600,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(15),
-                                            ),
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 15),
-                                            elevation: 5,
-                                          ),
-                                          child: const Text(
-                                            'Войти',
-                                            style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold),
+                                      TextField(
+                                        controller: nameController,
+                                        style: const TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        decoration: InputDecoration(
+                                          hintText: 'Добавьте название...',
+                                          filled: true,
+                                          fillColor: Colors.grey.shade100,
+                                          contentPadding:
+                                              const EdgeInsets.all(12),
+                                          border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            borderSide: BorderSide.none,
                                           ),
                                         ),
+                                        minLines: 1,
+                                        maxLines: 2,
+                                        maxLength: 40,
+                                      ),
+                                      const SizedBox(height: 16),
+                                      TextField(
+                                        controller: descriptionController,
+                                        scrollPhysics:
+                                            const NeverScrollableScrollPhysics(),
+                                        decoration: InputDecoration(
+                                          hintText: 'Добавьте описание...',
+                                          filled: true,
+                                          fillColor: Colors.grey.shade100,
+                                          contentPadding: EdgeInsets.all(12),
+                                          border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            borderSide: BorderSide.none,
+                                          ),
+                                        ),
+                                        minLines: 1,
+                                        maxLines: 9,
+                                        maxLength: 750,
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Spacer(),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          FloatingActionButton(
+                                            backgroundColor:
+                                                Colors.grey.shade400,
+                                            elevation: 0,
+                                            onPressed: () {
+                                              if (isTemporary) {
+                                                pointBloc.add(
+                                                    CancelTemporaryPointEvent());
+                                              } else {
+                                                pointBloc
+                                                    .add(RemovePointEvent());
+                                              }
+                                              _panelController.close();
+                                            },
+                                            child: const Icon(
+                                              Icons.delete,
+                                              color: Colors.black,
+                                              size: 25,
+                                            ),
+                                          ),
+                                          FloatingActionButton(
+                                            backgroundColor:
+                                                Colors.grey.shade400,
+                                            elevation: 0,
+                                            onPressed: () {
+                                              if (nameController.text.trim() ==
+                                                  '') {
+                                                Fluttertoast.showToast(
+                                                  msg:
+                                                      "Необходимо добавить название точки",
+                                                  toastLength:
+                                                      Toast.LENGTH_SHORT,
+                                                  gravity: ToastGravity.BOTTOM,
+                                                  timeInSecForIosWeb: 1,
+                                                  backgroundColor: Colors.black,
+                                                  textColor: Colors.white,
+                                                  fontSize: 16.0,
+                                                );
+                                              } else {
+                                                if (isTemporary) {
+                                                  pointBloc.add(
+                                                      SaveTemporaryPointEvent(
+                                                          point!.copyWith(
+                                                              name:
+                                                                  nameController
+                                                                      .text,
+                                                              description:
+                                                                  descriptionController
+                                                                      .text,
+                                                              photosMain: point
+                                                                  .photosMain),
+                                                          currentUser));
+                                                } else {
+                                                  pointBloc.add(
+                                                    UpdatePointEvent(
+                                                        point!.copyWith(
+                                                            name: nameController
+                                                                .text,
+                                                            description:
+                                                                descriptionController
+                                                                    .text,
+                                                            photosMain: point
+                                                                .photosMain),
+                                                        currentUser),
+                                                  );
+                                                }
+                                                _panelController.close();
+                                              }
+                                            },
+                                            child: const Icon(
+                                              Icons.check,
+                                              color: Colors.black87,
+                                              size: 35,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                ],
+                                ),
                               ),
                             ),
-                          )
-                        : Center(
-                            child: FloatingActionButton(
-                                elevation: 0,
-                                backgroundColor: Colors.grey.shade200,
-                                child: const Icon(
-                                  Icons.add,
-                                  color: Colors.black45,
-                                  size: 35,
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  Visibility(
+                      visible: !isPanelOpen && isTemporary,
+                      child: Container(
+                        width: double.infinity,
+                        height: MediaQuery.sizeOf(context).height * 0.2,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.only(
+                              topRight: Radius.circular(25),
+                              topLeft: Radius.circular(25)),
+                        ),
+                        child: !currentUser.isAuthorized
+                            ? Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(25),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 10,
+                                      spreadRadius: 2,
+                                    ),
+                                  ],
                                 ),
-                                onPressed: () {
-                                  setState(() {
-                                    isPanelOpen = true;
-                                  });
-                                  _panelController.open();
-                                  //   _panelController.open();
-                                }),
-                          ),
-                  )),
-              Container(
-                width: double.infinity,
-                height: 40,
-                child: Center(
-                  child: Container(
-                    width: 50,
-                    height: 7,
-                    decoration: BoxDecoration(
-                      color: Colors.black45,
-                      borderRadius: BorderRadius.circular(10),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 15),
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        children: [
+                                          Expanded(
+                                            child: ElevatedButton(
+                                              onPressed: () async {
+                                                final result =
+                                                    await Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          SettingsScreen()),
+                                                );
+                                                if (result != null &&
+                                                    result is User) {
+                                                  currentUser = result;
+                                                }
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                foregroundColor: Colors.white,
+                                                backgroundColor:
+                                                    Colors.grey.shade600,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(15),
+                                                ),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 15),
+                                                elevation: 5,
+                                              ),
+                                              child: const Text(
+                                                'Войти',
+                                                style: TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            : Center(
+                                child: FloatingActionButton(
+                                    elevation: 0,
+                                    backgroundColor: Colors.grey.shade200,
+                                    child: const Icon(
+                                      Icons.add,
+                                      color: Colors.black45,
+                                      size: 35,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        isPanelOpen = true;
+                                      });
+                                      _panelController.open();
+                                      //   _panelController.open();
+                                    }),
+                              ),
+                      )),
+                  Container(
+                    width: double.infinity,
+                    height: 40,
+                    child: Center(
+                      child: Container(
+                        width: 50,
+                        height: 7,
+                        decoration: BoxDecoration(
+                          color: Colors.black45,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
 /*
               Positioned(
                 right: 15,
@@ -1034,11 +1053,8 @@ class _MapScreenState extends State<MapScreen> {
                 ),
               )
 */
-            ],
-          ),
-        ));
+                ],
+              ),
+            ));
   }
-
-
-
 }

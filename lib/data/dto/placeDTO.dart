@@ -4,7 +4,7 @@ import 'package:map_tracker/data/models/photo.dart';
 class PlaceDTO {
   final String id;
   final String name;
-  final String description;
+  final String? description;
   final double latitude;
   final double longitude;
   final List<Photo> photos;

@@ -12,7 +12,7 @@ class PlaceMapper {
     return Place(
       id: placeDTO.id,
       name: placeDTO.name,
-      description: placeDTO.description,
+      description: placeDTO.description ?? '',
       placeLocation: Point(
         latitude: placeDTO.latitude,
         longitude: placeDTO.longitude,
