@@ -39,6 +39,7 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
 
   @override
   void dispose() {
+    _mapController?.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -121,7 +122,6 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
       );
     }
   }
-
 
   Widget _pageViewBulder(PointState s1) {
     late List<Place> userPoints = [];
@@ -280,9 +280,11 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
                 backgroundColor: Colors.white,
                 mini: true,
                 onPressed: () async {
-                  final result = await Navigator.push(
+                  Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => MapScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => MapScreen(),
+                    ),
                   );
                 },
                 child: const Icon(
@@ -329,179 +331,184 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
   int currentPage = 0;
 
   Widget _buildSlidingPanel(OtherUserPointsLoadedState state) {
-    if(state.points.isNotEmpty){
-    Place point = state.points[state.selectedIndex];
-    return ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-        child: Container(
-          color: Colors.white,
-          child: Stack(
-            children: [
-              StatefulBuilder(
-                builder: (context, setState) {
-                  return GestureDetector(
-                    onVerticalDragEnd: (details) {
-                      if (_panelController.isAttached &&
-                          details.primaryVelocity! > 0) {
-                        _panelController.close();
-                      }
-                    },
-                    child: Column(
-                      children: [
-                        Stack(
-                          children: [
-                            SizedBox(
-                              height: MediaQuery.sizeOf(context).height * 0.3,
-                              width: MediaQuery.sizeOf(context).width,
-                              child: point.photosMain.isEmpty
-                                  ? const Center(
-                                      child: Icon(
-                                        Icons.image,
-                                        size: 100,
+    if (state.points.isNotEmpty) {
+      Place point = state.points[state.selectedIndex];
+      return ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+          child: Container(
+            color: Colors.white,
+            child: Stack(
+              children: [
+                StatefulBuilder(
+                  builder: (context, setState) {
+                    return GestureDetector(
+                      onVerticalDragEnd: (details) {
+                        if (_panelController.isAttached &&
+                            details.primaryVelocity! > 0) {
+                          _panelController.close();
+                        }
+                      },
+                      child: Column(
+                        children: [
+                          Stack(
+                            children: [
+                              SizedBox(
+                                height: MediaQuery.sizeOf(context).height * 0.3,
+                                width: MediaQuery.sizeOf(context).width,
+                                child: point.photosMain.isEmpty
+                                    ? const Center(
+                                        child: Icon(
+                                          Icons.image,
+                                          size: 100,
+                                        ),
+                                      )
+                                    : PageView.builder(
+                                        itemCount: point.photosMain.length,
+                                        onPageChanged: (index) {
+                                          setState(() {
+                                            currentPage = index;
+                                          });
+                                        },
+                                        itemBuilder: (context, index) {
+                                          return point.photosMain[index]
+                                                  .isLocal()
+                                              ? Image.file(
+                                                  File(point.photosMain[index]
+                                                      .filePath),
+                                                  fit: BoxFit.cover,
+                                                )
+                                              : Image.network(
+                                                  point.photosMain[index]
+                                                      .filePath,
+                                                  fit: BoxFit.cover,
+                                                );
+                                        },
                                       ),
-                                    )
-                                  : PageView.builder(
-                                      itemCount: point.photosMain.length,
-                                      onPageChanged: (index) {
-                                        setState(() {
-                                          currentPage = index;
-                                        });
-                                      },
-                                      itemBuilder: (context, index) {
-                                        return point.photosMain[index].isLocal()
-                                            ? Image.file(
-                                                File(point.photosMain[index]
-                                                    .filePath),
-                                                fit: BoxFit.cover,
-                                              )
-                                            : Image.network(
-                                                point
-                                                    .photosMain[index].filePath,
-                                                fit: BoxFit.cover,
-                                              );
-                                      },
-                                    ),
-                            ),
-                            Positioned(
-                              bottom: 30,
-                              left: 80,
-                              right: 80,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: List.generate(
-                                  point.photosMain.length ?? 0,
-                                  (index) => AnimatedContainer(
-                                    duration: const Duration(milliseconds: 200),
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal: 4),
-                                    width: currentPage == index ? 12 : 8,
-                                    height: currentPage == index ? 12 : 8,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: currentPage == index
-                                          ? Colors.black
-                                          : Colors.grey.shade400,
+                              ),
+                              Positioned(
+                                bottom: 30,
+                                left: 80,
+                                right: 80,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: List.generate(
+                                    point.photosMain.length ?? 0,
+                                    (index) => AnimatedContainer(
+                                      duration:
+                                          const Duration(milliseconds: 200),
+                                      margin: const EdgeInsets.symmetric(
+                                          horizontal: 4),
+                                      width: currentPage == index ? 12 : 8,
+                                      height: currentPage == index ? 12 : 8,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: currentPage == index
+                                            ? Colors.black
+                                            : Colors.grey.shade400,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        Expanded(
-                          child: Container(
-                            transform: Matrix4.translationValues(0,
-                                -MediaQuery.sizeOf(context).height * 0.01, 0),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(25),
-                                topRight: Radius.circular(25),
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
-                                  blurRadius: 10,
-                                  spreadRadius: 2,
-                                  offset: const Offset(0, -4),
-                                ),
-                              ],
-                            ),
-                            child: SizedBox(
-                              width: double.infinity,
-                              child: Padding(
-                                padding: const EdgeInsets.all(20),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  // Прижимает содержимое к левому краю
-                                  children: [
-                                    const Text(
-                                      "Название",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 25,
-                                      ),
-                                    ),
-                                    Text(
-                                      point.name.isNotEmpty
-                                          ? point.name
-                                          : 'Название отсутствует',
-                                      style: const TextStyle(
-                                        fontSize: 20,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    const Text(
-                                      "Описание",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 25,
-                                      ),
-                                    ),
-                                    Text(
-                                      point.description.isNotEmpty
-                                          ? point.description
-                                          : 'Описание отсутствует',
-                                      style: const TextStyle(
-                                        fontSize: 20,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
+                            ],
                           ),
-                        )
-                      ],
-                    ),
-                  );
-                },
-              ),
-              SizedBox(
-                width: double.infinity,
-                height: 40,
-                child: Center(
-                  child: Container(
-                    width: 50,
-                    height: 7,
-                    decoration: BoxDecoration(
-                      color: Colors.black45,
-                      borderRadius: BorderRadius.circular(10),
+                          Expanded(
+                            child: Container(
+                              transform: Matrix4.translationValues(0,
+                                  -MediaQuery.sizeOf(context).height * 0.01, 0),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(25),
+                                  topRight: Radius.circular(25),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    blurRadius: 10,
+                                    spreadRadius: 2,
+                                    offset: const Offset(0, -4),
+                                  ),
+                                ],
+                              ),
+                              child: SizedBox(
+                                width: double.infinity,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    // Прижимает содержимое к левому краю
+                                    children: [
+                                      const Text(
+                                        "Название",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 25,
+                                        ),
+                                      ),
+                                      Text(
+                                        point.name.isNotEmpty
+                                            ? point.name
+                                            : 'Название отсутствует',
+                                        style: const TextStyle(
+                                          fontSize: 20,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      const Text(
+                                        "Описание",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 25,
+                                        ),
+                                      ),
+                                      Text(
+                                        point.description.isNotEmpty
+                                            ? point.description
+                                            : 'Описание отсутствует',
+                                        style: const TextStyle(
+                                          fontSize: 20,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  height: 40,
+                  child: Center(
+                    child: Container(
+                      width: 50,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        color: Colors.black45,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ));} else{
+              ],
+            ),
+          ));
+    } else {
       return SizedBox.shrink();
     }
   }
 
   List<Place> points = [];
+
   @override
   Widget build(BuildContext context) {
     currentDeviceHeight = MediaQuery.sizeOf(context).height;
@@ -510,8 +517,7 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: Container(
-            color: Colors.white),
+        leading: Container(color: Colors.white),
       ),
       body: Stack(
         children: [
@@ -589,14 +595,12 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
                           ),
                         ),
                       ),
-
                       if (_selectedUser != null)
                         IconButton(
                           icon: const Icon(Icons.clear, color: Colors.grey),
                           onPressed: () {
-                            BlocProvider.of<PointBloc>(context).add(
-                                OtherUserPointsLoadingEvent(
-                                    '', ''));
+                            BlocProvider.of<PointBloc>(context)
+                                .add(OtherUserPointsLoadingEvent('', ''));
                             setState(() {
                               _selectedUser = null;
                               _controller.clear();
@@ -618,7 +622,6 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
                     ],
                   ),
                 ),
-
                 if (_isDropdownExpanded)
                   Container(
                     width: double.infinity,
