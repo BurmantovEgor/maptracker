@@ -275,6 +275,7 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
               height: 50,
               width: 50,
               child: FloatingActionButton(
+                heroTag: 'MainMapScreen_Button',
                 shape: CircleBorder(),
                 backgroundColor: Colors.white,
                 mini: true,

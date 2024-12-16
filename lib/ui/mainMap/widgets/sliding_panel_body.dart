@@ -208,6 +208,7 @@ class _SlidingPanelWidgetState extends State<SlidingPanelBodyWidget> {
                                     left: 16,
                                     bottom: 30,
                                     child: FloatingActionButton(
+                                      heroTag: 'DeletePhoto_Button',
                                       onPressed: () {
                                         setState(() {
                                           point.photosMain
@@ -261,6 +262,8 @@ class _SlidingPanelWidgetState extends State<SlidingPanelBodyWidget> {
                                     right: 16,
                                     bottom: 30,
                                     child: FloatingActionButton(
+                                      heroTag: 'AddPhoto_Button',
+
                                       onPressed: () async {
                                         final pickedFile =
                                         await _picker
@@ -393,6 +396,8 @@ class _SlidingPanelWidgetState extends State<SlidingPanelBodyWidget> {
                                           .spaceBetween,
                                       children: [
                                         FloatingActionButton(
+                                          heroTag: 'DeletePoint_Button',
+
                                           backgroundColor:
                                           Colors.grey.shade400,
                                           elevation: 0,
@@ -427,6 +432,8 @@ class _SlidingPanelWidgetState extends State<SlidingPanelBodyWidget> {
                                           ),
                                         ),
                                         FloatingActionButton(
+                                          heroTag: 'SavePoint_Button',
+
                                           backgroundColor:
                                           Colors.grey.shade400,
                                           elevation: 0,
@@ -513,6 +520,7 @@ class _SlidingPanelWidgetState extends State<SlidingPanelBodyWidget> {
                     ),
                     child: Center(
                       child: FloatingActionButton(
+                        heroTag: 'AddPoint_Button',
                           elevation: 0,
                           backgroundColor: Colors.grey.shade200,
                           child: const Icon(

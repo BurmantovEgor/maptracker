@@ -158,6 +158,7 @@ class _MapScreenState extends State<MapScreen> {
               height: 50,
               width: 50,
               child: FloatingActionButton(
+                heroTag: 'UserAcc_Button',
                 shape: CircleBorder(),
                 backgroundColor: Colors.white,
                 mini: true,
@@ -176,6 +177,8 @@ class _MapScreenState extends State<MapScreen> {
               height: 50,
               width: 50,
               child: FloatingActionButton(
+                heroTag: 'SearchUserScreen_Button',
+
                 shape: CircleBorder(),
                 backgroundColor: Colors.white,
                 mini: true,
@@ -525,6 +528,8 @@ class _MapScreenState extends State<MapScreen> {
           height: 50,
           width: 50,
           child: FloatingActionButton(
+            heroTag: 'CurrLoc_Button',
+
             shape: CircleBorder(),
             backgroundColor: Colors.white,
             mini: true,
@@ -645,6 +650,7 @@ class _MapScreenState extends State<MapScreen> {
   late TextEditingController nameController;
   late TextEditingController descriptionController;
 
+/*
   Widget _buildSlidingPanel(PointsLoadedState state) {
     final temporaryPoint = state.temporaryPoint;
     final selectedPoint = state.selectedPoint;
@@ -1121,4 +1127,5 @@ class _MapScreenState extends State<MapScreen> {
                     ),
             )));
   }
+*/
 }
