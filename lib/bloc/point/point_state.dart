@@ -23,7 +23,6 @@ class PointsLoadedState extends PointState {
 class OtherUserPointsLoadedState extends PointState {
   final List<Place> points;
   final int selectedIndex;
-
   OtherUserPointsLoadedState({
     required this.points,
     this.selectedIndex = 0,

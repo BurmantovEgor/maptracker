@@ -27,7 +27,12 @@ class CreateTemporaryPointEvent extends PointEvent {
 
 class CancelTemporaryPointEvent extends PointEvent {}
 
-class RemovePointEvent extends PointEvent {}
+class RemovePointEvent extends PointEvent {
+  final int selectedIndex;
+  final String jwt;
+  RemovePointEvent({required this.selectedIndex, required this.jwt});
+
+}
 
 class UpdatePointEvent extends PointEvent {
   final Place updatedPoint;
@@ -45,9 +50,14 @@ class SaveTemporaryPointEvent extends PointEvent {
 
 class SelectPointEvent extends PointEvent {
   final int index;
-
   SelectPointEvent(this.index);
 }
+
+class SelectPointOtherUserEvent extends PointEvent {
+  final int index;
+  SelectPointOtherUserEvent(this.index);
+}
+
 
 class UpdateTemporaryPointNameEvent extends PointEvent {
   final String name;

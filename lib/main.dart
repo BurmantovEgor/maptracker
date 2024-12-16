@@ -8,7 +8,7 @@ import 'package:map_tracker/bloc/user/user_block.dart';
 import 'package:map_tracker/data/models/user.dart';
 import 'package:map_tracker/service/palce_service.dart';
 import 'package:map_tracker/service/user_service.dart';
-import 'package:map_tracker/ui/friends/screens/friends_screnn.dart';
+import 'package:map_tracker/ui/friends/screens/seach_user_screen.dart';
 import 'package:map_tracker/ui/mainMap/screens/map_screen.dart';
 import 'package:map_tracker/ui/settings/screens/settings_screen.dart';
 

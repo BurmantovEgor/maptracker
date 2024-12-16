@@ -16,7 +16,7 @@ class PlaceService {
       : dio = Dio(
           BaseOptions(
             baseUrl: "https://192.168.3.38:7042",
-         //   baseUrl: "https://192.168.3.10:7042",
+            //   baseUrl: "https://192.168.3.10:7042",
           ),
         ) {
     (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =
@@ -56,6 +56,35 @@ class PlaceService {
     }
   }
 
+  Future<int> removePlaces(String jwt, String pointId) async {
+    try {
+      final response = await dio.delete(
+        '/api/places/${pointId}',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $jwt',
+          },
+        ),
+      );
+      if (response.statusCode == 200) {
+        print('codeudal:');
+        print(response.statusCode);
+        return 200;
+      } else {
+        print('code:');
+        print(response.statusCode);
+
+        return response.statusCode?? -1;
+        throw Exception('Failed to load places');
+      }
+    } catch (e) {
+      print('exc:');
+
+      print(e);
+      return -1;
+    }
+  }
+
   Future<List<PlaceDTO>> getPlaces(String jwt) async {
     try {
       final response = await dio.get(
@@ -68,7 +97,8 @@ class PlaceService {
       );
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data;
-        return data.map((json) => PlaceDTO.fromJson(json)).toList();
+        final a = data.map((json) => PlaceDTO.fromJson(json)).toList();
+        return a;
       } else {
         throw Exception('Failed to load places');
       }
@@ -77,7 +107,7 @@ class PlaceService {
     }
   }
 
-  Future<void> addPlace(PlaceCreateDTO placeCreateDTO, String jwt) async {
+  Future<String> addPlace(PlaceCreateDTO placeCreateDTO, String jwt) async {
     try {
       String latitude = placeCreateDTO.latitude.toString().replaceAll('.', ',');
       String longitude =
@@ -92,7 +122,8 @@ class PlaceService {
       if (placeCreateDTO.description.trim().isNotEmpty) {
         formData.fields
             .add(MapEntry('description', placeCreateDTO.description.trim()));
-      } /*else {
+      }
+      /*else {
         formData.fields
             .add(const MapEntry('description', 'Описание отсутствует'));
       }*/
@@ -106,6 +137,7 @@ class PlaceService {
         formData.files.add(MapEntry('photos[$i].file', photoFile));
         formData.fields.add(MapEntry('photos[$i].description', 'Нет описания'));
       }
+
       final response = await dio.post(
         '/api/places',
         data: formData,
@@ -116,10 +148,14 @@ class PlaceService {
         ),
       );
       if (response.statusCode == 200) {
+        return response.data['id'];
+
       } else {
+        return 'NotCreated';
         throw Exception('Failed to create place');
       }
     } catch (e) {
+      return 'NotCreated';
       throw Exception('Error while sending request');
     }
   }

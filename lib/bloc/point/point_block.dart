@@ -18,9 +18,7 @@ class PointBloc extends Bloc<PointEvent, PointState> {
       emit(PointsLoadingState());
       if (event.jwt.trim().isNotEmpty) {
         _points = await apiService.getPlaces(event.jwt);
-        print('userPoints: ${_points.length}');
         final mappedPoints = PlaceMapper.fromPlaceRepoListToPlaceList(_points);
-        print('mappedPoints: ${mappedPoints.length}');
         emit(PointsLoadedState(points: mappedPoints));
       } else {
         emit(PointsLoadedState(points: []));
@@ -35,11 +33,8 @@ class PointBloc extends Bloc<PointEvent, PointState> {
 
     on<OtherUserPointsLoadingEvent>((event, emit) async {
       if (event.jwt.trim().isNotEmpty) {
-        print('testGetUser');
         _points = await apiService.getUserPlaces(event.userId, event.jwt);
-        print('userPoints: ${_points.length}');
         final mappedPoints = PlaceMapper.fromPlaceRepoListToPlaceList(_points);
-        print('mappedPoints: ${mappedPoints.length}');
         emit(OtherUserPointsLoadedState(points: mappedPoints));
       } else {
         emit(OtherUserPointsLoadedState(points: []));
@@ -62,16 +57,33 @@ class PointBloc extends Bloc<PointEvent, PointState> {
       }
     });
 
-    on<RemovePointEvent>((event, emit) {
+    on<RemovePointEvent>((event, emit) async {
       final currentState = state as PointsLoadedState;
-      currentState.points.removeAt(currentState.selectedIndex);
+      final resultCode = await apiService.removePlaces(
+          event.jwt, currentState.points[event.selectedIndex].id);
+      print('cuurentDeleteCode${resultCode}');
+      if (resultCode == 200) {
+        print('ya v udalenii${resultCode}');
 
-      emit(PointsLoadedState(
-        points: currentState.points,
-        selectedIndex: currentState.selectedIndex == 0
-            ? 0
-            : currentState.selectedIndex - 1,
-      ));
+        currentState.points.removeAt(event.selectedIndex);
+        emit(PointsLoadedState(
+            points: currentState.points,
+            selectedIndex: currentState.points.isEmpty
+                ? 0
+                : event.selectedIndex == 0
+                    ? event.selectedIndex + 1
+                    : event.selectedIndex - 1,
+            selectedPoint: currentState.points.isEmpty
+                ? null
+                : event.selectedIndex == 0
+                    ? currentState.points[event.selectedIndex + 1]
+                    : currentState.points[event.selectedIndex - 1]));
+      } else {
+        emit(PointsLoadedState(
+            points: currentState.points,
+            selectedIndex: event.selectedIndex,
+            selectedPoint: currentState.selectedPoint));
+      }
     });
 
     on<CreateTemporaryPointEvent>((event, emit) {
@@ -128,17 +140,23 @@ class PointBloc extends Bloc<PointEvent, PointState> {
           isPointTemporay: false,
           isSelected: true,
           photosMain: currentState.temporaryPoint!.photosMain);
-      final updatedPoints = List<Place>.from(currentState.points)
-        ..add(newPoint);
-
       final placeDTO = PlaceMapper.fromPlaceToPlaceCreateDTO(newPoint);
-      await apiService.addPlace(placeDTO, event.currentUser.jwt);
+      final result = await apiService.addPlace(placeDTO, event.currentUser.jwt);
 
-      emit(PointsLoadedState(
-        points: updatedPoints,
-        selectedIndex: updatedPoints.length - 1,
-        selectedPoint: newPoint,
-      ));
+      if (result != 'NotCreated') {
+        final newPointWithId = event.newPoint.copyWith(
+            id: result,
+            isPointTemporay: false,
+            isSelected: true,
+            photosMain: currentState.temporaryPoint!.photosMain);
+        final updatedPoints = List<Place>.from(currentState.points)
+          ..add(newPointWithId);
+        emit(PointsLoadedState(
+          points: updatedPoints,
+          selectedIndex: updatedPoints.length - 1,
+          selectedPoint: newPointWithId,
+        ));
+      }
     });
 
     on<CancelTemporaryPointEvent>((event, emit) {
@@ -159,6 +177,18 @@ class PointBloc extends Bloc<PointEvent, PointState> {
         points: currentState.points,
         selectedIndex: event.index,
         selectedPoint: currentState.points[event.index],
+      ));
+    });
+
+    on<SelectPointOtherUserEvent>((event, emit) {
+      final currentState = state as OtherUserPointsLoadedState;
+      for (int i = 0; i < currentState.points.length; i++) {
+        currentState.points[i].isSelected = false;
+      }
+      currentState.points[event.index].isSelected = true;
+      emit(OtherUserPointsLoadedState(
+        points: currentState.points,
+        selectedIndex: event.index,
       ));
     });
   }
