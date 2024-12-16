@@ -165,8 +165,7 @@ class PlaceService {
       PlaceUpdateDTO placeUpdateDTO = PlaceUpdateDTO.fromPointAndPhotos(point);
       for (int i = 0; i < point.photosMain.length; i++) {}
       String latitude = placeUpdateDTO.latitude.toString().replaceAll('.', ',');
-      String longitude =
-          placeUpdateDTO.longitude.toString().replaceAll('.', ',');
+      String longitude = placeUpdateDTO.longitude.toString().replaceAll('.', ',');
 
       FormData formData = FormData.fromMap({
         'name': placeUpdateDTO.name,
@@ -207,6 +206,7 @@ class PlaceService {
         throw Exception('Failed to update place');
       }
     } catch (e) {
+      print(e);
       throw Exception('Error while sending request');
     }
   }

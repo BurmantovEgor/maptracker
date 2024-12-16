@@ -113,6 +113,10 @@ class PointBloc extends Bloc<PointEvent, PointState> {
 
     on<UpdatePointEvent>((event, emit) async {
       final currentState = state as PointsLoadedState;
+      print('bloc');
+      print(event.updatedPoint.placeLocation.longitude);
+      print(event.updatedPoint.placeLocation.latitude);
+
       if (currentState.points.contains(event.updatedPoint)) return;
 
       final updatedPoints = currentState.points.map((point) {

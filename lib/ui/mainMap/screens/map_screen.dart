@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -178,7 +179,6 @@ class _MapScreenState extends State<MapScreen> {
               width: 50,
               child: FloatingActionButton(
                 heroTag: 'SearchUserScreen_Button',
-
                 shape: CircleBorder(),
                 backgroundColor: Colors.white,
                 mini: true,
@@ -187,7 +187,8 @@ class _MapScreenState extends State<MapScreen> {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => SearchPeopleScreen(currentUser: currentUser),
+                        builder: (context) =>
+                            SearchPeopleScreen(currentUser: currentUser),
                       ),
                     );
                   } else {
@@ -528,7 +529,6 @@ class _MapScreenState extends State<MapScreen> {
           width: 50,
           child: FloatingActionButton(
             heroTag: 'CurrLoc_Button',
-
             shape: CircleBorder(),
             backgroundColor: Colors.white,
             mini: true,
@@ -560,6 +560,16 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
+  Place movedPoint = Place(
+      id: "0",
+      photosMain: [],
+      placeLocation: Point(latitude: 0, longitude: 0),
+      name: "name",
+      description: "",
+      isPointTemporay: false,
+      isSelected: false);
+  Point movedCoord = Point(latitude: 0, longitude: 0);
+
   List<PlacemarkMapObject> _createMapObjects(
       List<Place> points, Place? temporaryPoint, Point? userLocation) {
     final mapObjects = points.asMap().entries.map((entry) {
@@ -569,9 +579,45 @@ class _MapScreenState extends State<MapScreen> {
           latitude: entry.value.placeLocation.latitude,
           longitude: entry.value.placeLocation.longitude,
         ),
-        /* onTap: (object, point) {
-          _moveToSelectedPoint(point.latitude, point.longitude);
-        },*/
+        consumeTapEvents: true,
+        isDraggable: true,
+        onDragEnd: (object) {
+          movedPoint.placeLocation = movedCoord;
+          pointBloc.add(UpdatePointEvent(
+              movedPoint.copyWith(
+                  photosMain: movedPoint.photosMain,
+                  name: movedPoint.name,
+                  description: movedPoint.description,
+                  placeLocation: movedCoord,
+                  id: movedPoint.id),
+              currentUser));
+        },
+        onDragStart: (object) {
+          movedPoint = points.firstWhere((pointUser) =>
+              pointUser.placeLocation.latitude == object.point.latitude &&
+              pointUser.placeLocation.longitude == object.point.longitude);
+          final currentIndex = points.indexOf(movedPoint);
+          pointBloc.add(SelectPointEvent(currentIndex));
+        /*  _pageController.jumpToPage(
+            currentIndex,
+          );*/
+          _panelController.close();
+        },
+        onDrag: (object, point) {
+          movedCoord = point;
+        },
+        onTap: (object, point) {
+          _panelController.close();
+          final currentPoint = points.firstWhere((pointUser) =>
+              pointUser.placeLocation.latitude == object.point.latitude &&
+              pointUser.placeLocation.longitude == object.point.longitude);
+          final currentIndex = points.indexOf(currentPoint);
+          _moveCameraToPoint(_mapController, object.point, false, 0.5);
+          _pageController.jumpToPage(
+            currentIndex,
+          );
+          pointBloc.add(SelectPointEvent(currentIndex));
+        },
         opacity: entry.value.isSelected ? 1 : 0.7,
         icon: PlacemarkIcon.single(
           PlacemarkIconStyle(
@@ -590,6 +636,22 @@ class _MapScreenState extends State<MapScreen> {
               latitude: temporaryPoint.placeLocation.latitude,
               longitude: temporaryPoint.placeLocation.longitude,
             ),
+            isDraggable: true,
+            onDragEnd: (object) {
+              temporaryPoint.placeLocation = movedCoord;
+              movedPoint.placeLocation = movedCoord;
+              /*    pointBloc.add(UpdatePointEvent(
+                  movedPoint.copyWith(
+                      photosMain: movedPoint.photosMain,
+                      name: movedPoint.name,
+                      description: movedPoint.description,
+                      placeLocation: movedCoord,
+                      id: movedPoint.id),
+                  currentUser));*/
+            },
+            onDrag: (object, point) {
+              movedCoord = point;
+            },
             icon: PlacemarkIcon.single(
               PlacemarkIconStyle(
                 anchor: Offset(0.5, 1.0),

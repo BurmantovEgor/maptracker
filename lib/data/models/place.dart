@@ -5,7 +5,7 @@ class Place {
   final String id;
   String name;
   String description;
-  final Point placeLocation;
+  Point placeLocation;
   List<Photo> photosMain = [];
 
   final bool isPointTemporay;

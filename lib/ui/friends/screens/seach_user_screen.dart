@@ -69,17 +69,28 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
     );
   }
 
+
   List<PlacemarkMapObject> _createMapObjects(List<Place> points) {
     final mapObjects = points.asMap().entries.map((entry) {
       return PlacemarkMapObject(
         mapId: MapObjectId('placemark_${entry.key}'),
+        consumeTapEvents: true,
         point: Point(
           latitude: entry.value.placeLocation.latitude,
           longitude: entry.value.placeLocation.longitude,
         ),
-        /* onTap: (object, point) {
-          _moveToSelectedPoint(point.latitude, point.longitude);
-        },*/
+        onTap: (object, point) {
+          _panelController.close();
+          final currentPoint = points.firstWhere((pointUser) =>
+              pointUser.placeLocation.latitude == object.point.latitude &&
+              pointUser.placeLocation.longitude == object.point.longitude);
+          final currentIndex = points.indexOf(currentPoint);
+          _moveCameraToPoint(_mapController, object.point, false, 0.5);
+          _pageController.jumpToPage(currentIndex,
+              );
+          BlocProvider.of<PointBloc>(context)
+              .add(SelectPointOtherUserEvent(currentIndex));
+        },
         icon: PlacemarkIcon.single(
           PlacemarkIconStyle(
             anchor: Offset(0.5, 1.0),

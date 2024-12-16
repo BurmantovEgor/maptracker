@@ -37,7 +37,6 @@ class RemovePointEvent extends PointEvent {
 class UpdatePointEvent extends PointEvent {
   final Place updatedPoint;
   final User currentUser;
-
   UpdatePointEvent(this.updatedPoint, this.currentUser);
 }
 
