@@ -69,7 +69,6 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
     );
   }
 
-
   List<PlacemarkMapObject> _createMapObjects(List<Place> points) {
     final mapObjects = points.asMap().entries.map((entry) {
       return PlacemarkMapObject(
@@ -86,8 +85,9 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
               pointUser.placeLocation.longitude == object.point.longitude);
           final currentIndex = points.indexOf(currentPoint);
           _moveCameraToPoint(_mapController, object.point, false, 0.5);
-          _pageController.jumpToPage(currentIndex,
-              );
+          _pageController.jumpToPage(
+            currentIndex,
+          );
           BlocProvider.of<PointBloc>(context)
               .add(SelectPointOtherUserEvent(currentIndex));
         },
@@ -279,7 +279,7 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
 
   Widget _navigationButtons() {
     return Positioned(
-        top: currentDeviceHeight * 0.08,
+        top: currentDeviceHeight * 0.18,
         left: 10,
         child: Column(children: [
           Container(
@@ -301,6 +301,7 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
                 child: const Icon(
                   Icons.home,
                   size: 27,
+                  color: Colors.black,
                 ),
               )),
         ]));
@@ -525,11 +526,6 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
     currentDeviceHeight = MediaQuery.sizeOf(context).height;
     currentDeviceWidth = MediaQuery.sizeOf(context).width;
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: Container(color: Colors.white),
-      ),
       body: Stack(
         children: [
           BlocBuilder<PointBloc, PointState>(
@@ -543,156 +539,162 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
           ),
           _navigationButtons(),
           Positioned(
-            left: 0,
-            right: 0,
-            top: 0,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    border: Border(
-                      bottom: BorderSide(color: Colors.grey, width: 1.0),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              if (_selectedUser == null) {
-                                _isDropdownExpanded = true;
-                              }
-                            });
-                          },
-                          child: SizedBox(
-                            height: currentDeviceHeight * 0.06,
-                            child: _isDropdownExpanded
-                                ? TextField(
-                                    controller: _controller,
-                                    autofocus: true,
-                                    style: const TextStyle(
-                                      fontSize: 16.0,
-                                      height: 1.5,
-                                    ),
-                                    decoration: const InputDecoration(
-                                      hintText: 'Начните вводить имя...',
-                                      hintStyle: TextStyle(
-                                        fontSize: 16.0,
-                                        color: Colors.grey,
-                                      ),
-                                      border: InputBorder.none,
-                                    ),
-                                    onChanged: (value) {
-                                      BlocProvider.of<UserSearchBloc>(context)
-                                          .add(FetchUsersEvent(
-                                              value, widget.currentUser.jwt));
-                                    },
-                                  )
-                                : Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      _selectedUser ?? 'Начните вводить имя...',
-                                      style: const TextStyle(
-                                        fontSize: 16.0,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ),
-                          ),
+              left: 0,
+              right: 0,
+              top: currentDeviceHeight * 0.08,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 10, right: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: const Border(
+                          bottom: BorderSide(color: Colors.grey, width: 1.0),
                         ),
+                        borderRadius: BorderRadius.circular(25.0),
                       ),
-                      if (_selectedUser != null)
-                        IconButton(
-                          icon: const Icon(Icons.clear, color: Colors.grey),
-                          onPressed: () {
-                            BlocProvider.of<PointBloc>(context)
-                                .add(OtherUserPointsLoadingEvent('', ''));
-                            setState(() {
-                              _selectedUser = null;
-                              _controller.clear();
-                              _isDropdownExpanded = false;
-                            });
-                          },
-                        )
-                      else
-                        GestureDetector(
-                          onTap: _toggleDropdown,
-                          child: Icon(
-                            _isDropdownExpanded
-                                ? Icons.keyboard_arrow_up
-                                : Icons.keyboard_arrow_down,
-                            size: 24.0,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                if (_isDropdownExpanded)
-                  Container(
-                    width: double.infinity,
-                    height: currentDeviceHeight * 0.93,
-                    color: Colors.white,
-                    child: BlocBuilder<UserSearchBloc, UserSearchState>(
-                      builder: (context, state) {
-                        if (state is UserSearchLoadingState) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        } else if (state is UserSearchLoadedState) {
-                          if (state.users.isEmpty) {
-                            return const Padding(
-                              padding: EdgeInsets.all(10),
-                              child: Text(
-                                'Пользователь не найден',
-                                style:
-                                    TextStyle(color: Colors.grey, fontSize: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _isDropdownExpanded = true;
+                                });
+                              },
+                              child: SizedBox(
+                                height: currentDeviceHeight * 0.06,
+                                child: _isDropdownExpanded
+                                    ? TextField(
+                                        controller: _controller,
+                                        autofocus: true,
+                                        style: const TextStyle(
+                                          fontSize: 16.0,
+                                          height: 1.5,
+                                        ),
+                                        decoration: const InputDecoration(
+                                          hintText: 'Начните вводить имя...',
+                                          hintStyle: TextStyle(
+                                            fontSize: 16.0,
+                                            color: Colors.grey,
+                                          ),
+                                          border: InputBorder.none,
+                                        ),
+                                        onChanged: (value) {
+                                          BlocProvider.of<UserSearchBloc>(
+                                                  context)
+                                              .add(FetchUsersEvent(value,
+                                                  widget.currentUser.jwt));
+                                        },
+                                      )
+                                    : Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          _selectedUser ??
+                                              'Начните вводить имя...',
+                                          style: const TextStyle(
+                                            fontSize: 16.0,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ),
                               ),
-                            );
-                          }
-                          return ListView.builder(
-                            itemCount: state.users.length,
-                            itemBuilder: (context, index) {
-                              final user = state.users[index];
-                              return ListTile(
-                                title: Text(
-                                  user,
-                                  style: const TextStyle(fontSize: 16.0),
-                                ),
-                                onTap: () {
-                                  BlocProvider.of<PointBloc>(context).add(
-                                      OtherUserPointsLoadingEvent(
-                                          widget.currentUser.jwt, user));
-                                  setState(() {
-                                    _selectedUser = user;
-                                    _isDropdownExpanded = false;
-                                  });
+                            ),
+                          ),
+                          if (_selectedUser != null)
+                            IconButton(
+                              icon: const Icon(Icons.clear, color: Colors.grey),
+                              onPressed: () {
+                                BlocProvider.of<PointBloc>(context)
+                                    .add(OtherUserPointsLoadingEvent('', ''));
+                                setState(() {
+                                  _selectedUser = null;
+                                  _controller.clear();
+                                  _isDropdownExpanded = false;
+                                });
+                              },
+                            )
+                          else
+                            GestureDetector(
+                              onTap: _toggleDropdown,
+                              child: Icon(
+                                _isDropdownExpanded
+                                    ? Icons.keyboard_arrow_up
+                                    : Icons.keyboard_arrow_down,
+                                size: 24.0,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    if (_isDropdownExpanded)
+                      Container(
+                        transform: Matrix4.translationValues(
+                            0, -MediaQuery.sizeOf(context).height * 0.02, 0),
+                        width: double.infinity,
+                        height: currentDeviceHeight * 0.93,
+                        color: Colors.white,
+                        child: Padding(padding: EdgeInsets.only(top: MediaQuery.sizeOf(context).height * 0.02), child:
+                        BlocBuilder<UserSearchBloc, UserSearchState>(
+                          builder: (context, state) {
+                            if (state is UserSearchLoadingState) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            } else if (state is UserSearchLoadedState) {
+                              if (state.users.isEmpty) {
+                                return const Padding(
+                                  padding: EdgeInsets.all(10),
+                                  child: Text(
+                                    'Пользователь не найден',
+                                    style: TextStyle(
+                                        color: Colors.grey, fontSize: 16),
+                                  ),
+                                );
+                              }
+                              return ListView.builder(
+                                itemCount: state.users.length,
+                                itemBuilder: (context, index) {
+                                  final user = state.users[index];
+                                  return ListTile(
+                                    title: Text(
+                                      user,
+                                      style: const TextStyle(fontSize: 16.0),
+                                    ),
+                                    onTap: () {
+                                      BlocProvider.of<PointBloc>(context).add(
+                                          OtherUserPointsLoadingEvent(
+                                              widget.currentUser.jwt, user));
+                                      setState(() {
+                                        _selectedUser = user;
+                                        _isDropdownExpanded = false;
+                                      });
+                                    },
+                                  );
                                 },
                               );
-                            },
-                          );
-                        } else if (state is UserSearchErrorState) {
-                          return const Padding(
-                            padding: EdgeInsets.all(10),
-                            child: Text(
-                              'Пользователь не найден',
-                              style:
-                                  TextStyle(color: Colors.grey, fontSize: 16),
-                            ),
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
-                  ),
-              ],
-            ),
-          ),
+                            } else if (state is UserSearchErrorState) {
+                              return const Padding(
+                                padding: EdgeInsets.all(10),
+                                child: Text(
+                                  'Пользователь не найден',
+                                  style: TextStyle(
+                                      color: Colors.grey, fontSize: 16),
+                                ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                      ),
+                      )],
+                ),
+              )),
 
           // SlidingUpPanel
           BlocBuilder<PointBloc, PointState>(
