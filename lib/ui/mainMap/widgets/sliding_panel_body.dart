@@ -105,9 +105,8 @@ class _SlidingPanelWidgetState extends State<SlidingPanelBodyWidget> {
       canvas.drawImage(textureImage, Offset(0, 0), paint);
 
       final blurPaint = Paint()
-        ..color = Color.fromARGB(232, 255, 255, 255)
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, 10.0); // Размытие
-      canvas.drawRect(Rect.fromLTWH(0, 0, 720, 1000), blurPaint);
+        ..color = Color.fromARGB(232, 255, 255, 255);
+      canvas.drawRect(Rect.fromLTWH(0, 0, 720, 900), blurPaint);
 
       double imageSize = 170.0;
       double yOffset = 200;
