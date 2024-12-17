@@ -436,29 +436,34 @@ class _MapScreenState extends State<MapScreen> {
       },
       mapType: MapType.vector,
       onMapTap: (point) {
-        _moveCameraToPoint(_mapController, point, false, 0.5);
-        _panelController.animatePanelToPosition(0.17,
-            duration: Duration(milliseconds: 200));
-        if (currentUser.isAuthorized) {
-          pointBloc.add(CreateTemporaryPointEvent(
-            point.latitude,
-            point.longitude,
-          ));
-        } else {
-          Fluttertoast.showToast(
-            msg:
-                "Для продолжения работы необходимо авторизоваться в приложении",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.TOP,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.black,
-            textColor: Colors.white,
-            fontSize: 16.0,
-          );
+        try {
+          _moveCameraToPoint(_mapController, point, false, 0.5);
+
+          if (currentUser.isAuthorized) {
+            _panelController.animatePanelToPosition(0.17,
+                duration: Duration(milliseconds: 200));
+            pointBloc.add(CreateTemporaryPointEvent(
+              point.latitude,
+              point.longitude,
+            ));
+          } else {
+            Fluttertoast.showToast(
+              msg:
+                  "Для продолжения работы необходимо авторизоваться в приложении",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.TOP,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.black,
+              textColor: Colors.white,
+              fontSize: 16.0,
+            );
+          }
+          setState(() {
+            _isDialogVisible = true;
+          });
+        } catch (e) {
+          print(e);
         }
-        setState(() {
-          _isDialogVisible = true;
-        });
       },
       mapObjects: _createMapObjects(points, temporaryPoint, userLocation),
     );
@@ -598,7 +603,7 @@ class _MapScreenState extends State<MapScreen> {
               pointUser.placeLocation.longitude == object.point.longitude);
           final currentIndex = points.indexOf(movedPoint);
           pointBloc.add(SelectPointEvent(currentIndex));
-        /*  _pageController.jumpToPage(
+          /*  _pageController.jumpToPage(
             currentIndex,
           );*/
           _panelController.close();
