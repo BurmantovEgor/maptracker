@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
+import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -77,7 +79,372 @@ class _SlidingPanelWidgetState extends State<SlidingPanelBodyWidget> {
   final ImagePicker _picker = ImagePicker();
   GlobalKey _globalKey = GlobalKey();
 
-  Future<void> _captureAndSharePng() async {
+  Future<ui.Image> _loadImageFromNetwork(String url) async {
+    final imageProvider = NetworkImage(url);
+    final configuration = createLocalImageConfiguration(context);
+
+    final imageStream = imageProvider.resolve(configuration);
+    final completer = Completer<ui.Image>();
+
+    imageStream.addListener(ImageStreamListener((imageInfo, _) {
+      completer.complete(imageInfo.image);
+    }));
+
+    return completer.future;
+  }
+
+  Future<void> _generateAndShareImage(Place point) async {
+    try {
+      final recorder = ui.PictureRecorder();
+      final canvas =
+          Canvas(recorder, Rect.fromPoints(Offset(0, 0), Offset(720, 900)));
+      final paint = Paint()..color = Colors.white;
+
+      final textureImage = await _loadImageFromNetwork(
+          'https://static.tildacdn.com/tild3837-3663-4535-b435-653030633733/bg-lines-min.png');
+      canvas.drawImage(textureImage, Offset(0, 0), paint);
+
+      final blurPaint = Paint()
+        ..color = Color.fromARGB(232, 255, 255, 255)
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, 10.0); // Размытие
+      canvas.drawRect(Rect.fromLTWH(0, 0, 720, 1000), blurPaint);
+
+      double imageSize = 170.0;
+      double yOffset = 200;
+      double padding = 20.0;
+      double centerX = 360;
+
+      if (point.photosMain.isEmpty) {
+        print("Нет фотографий для отображения.");
+        return;
+      }
+
+      for (int i = 0; i < point.photosMain.length; i++) {
+        final imageUrl = point.photosMain[i].filePath;
+        final image = await _loadImageFromNetwork(imageUrl);
+
+        double xOffset = 0;
+
+        if (point.photosMain.length == 1) {
+          imageSize = 300.0;
+          xOffset = centerX - (imageSize / 2);
+        } else if (point.photosMain.length == 2) {
+          xOffset = centerX - (imageSize / 2);
+          yOffset = 100 + i * (imageSize + padding);
+        } else if (point.photosMain.length == 3) {
+          if (i < 2) {
+            xOffset = centerX -
+                imageSize -
+                (padding / 2) +
+                (i * (imageSize + padding));
+            yOffset = 100;
+          } else {
+            xOffset = centerX - (imageSize / 2);
+            yOffset = 100 + imageSize + padding;
+          }
+        } else if (point.photosMain.length == 4) {
+          xOffset = centerX -
+              imageSize -
+              (padding / 2) +
+              ((i % 2) * (imageSize + padding));
+          yOffset = 100 + (i ~/ 2) * (imageSize + padding);
+        } else if (point.photosMain.length == 5) {
+          if (i < 3) {
+            xOffset = centerX -
+                (imageSize * 1.5) -
+                padding +
+                (i * (imageSize + padding));
+            yOffset = 100;
+          } else {
+            xOffset = centerX -
+                imageSize -
+                (padding / 2) +
+                ((i - 3) * (imageSize + padding));
+            yOffset = 100 + imageSize + padding;
+          }
+        }
+
+        final rrect = RRect.fromRectAndRadius(
+          Rect.fromLTWH(xOffset, yOffset, imageSize, imageSize),
+          Radius.circular(imageSize / 2),
+        );
+
+        final shadowPaint = Paint()
+          ..color = Colors.black
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, 8.0);
+        canvas.drawRRect(
+          rrect,
+          shadowPaint
+            ..color = Color.fromARGB(255, 51, 63, 112).withOpacity(0.5),
+        );
+
+        final borderPaint = Paint()
+          ..color = Color.fromARGB(255, 51, 63, 112)
+          ..strokeWidth = 4
+          ..style = PaintingStyle.stroke;
+        canvas.drawRRect(rrect, borderPaint);
+
+        canvas.save();
+        final cropSize = image.width < image.height
+            ? image.width.toDouble()
+            : image.height.toDouble();
+
+        final srcX = (image.width - cropSize) / 2;
+        final srcY = (image.height - cropSize) / 2;
+
+        final srcRect = Rect.fromLTWH(srcX, srcY, cropSize, cropSize);
+
+        final dstRect = Rect.fromLTWH(xOffset, yOffset, imageSize, imageSize);
+
+        canvas.clipRRect(rrect);
+        canvas.drawImageRect(image, srcRect, dstRect, paint);
+
+        canvas.restore();
+      }
+
+      final titleText = point.name;
+      final titleStyle = ui.TextStyle(
+        fontSize: 30,
+        color: Color.fromARGB(255, 51, 63, 112),
+        fontWeight: FontWeight.bold,
+      );
+      final titleParagraphBuilder =
+          ParagraphBuilder(ParagraphStyle(textAlign: TextAlign.center))
+            ..pushStyle(titleStyle)
+            ..addText(titleText);
+      final titleParagraph = titleParagraphBuilder.build()
+        ..layout(ParagraphConstraints(width: 600));
+      canvas.drawParagraph(
+          titleParagraph, Offset((720 - titleParagraph.width) / 2, 20));
+
+      final descriptionText = point.description;
+      final descriptionStyle = ui.TextStyle(
+        fontSize: 23,
+        color: Color.fromARGB(255, 51, 63, 112),
+      );
+      final descriptionParagraphBuilder = ParagraphBuilder(
+        ParagraphStyle(textAlign: TextAlign.center),
+      )
+        ..pushStyle(descriptionStyle)
+        ..addText(descriptionText);
+      final descriptionParagraph = descriptionParagraphBuilder.build()
+        ..layout(ParagraphConstraints(width: 550));
+      canvas.drawParagraph(
+          descriptionParagraph,
+          Offset((720 - descriptionParagraph.width) / 2,
+              yOffset + imageSize + 40));
+
+      final picture = recorder.endRecording();
+      final generatedImage = await picture.toImage(720, 900);
+
+      final byteData =
+          await generatedImage.toByteData(format: ui.ImageByteFormat.png);
+      final pngBytes = byteData!.buffer.asUint8List();
+      final directory = await getTemporaryDirectory();
+      final filePath = '${directory.path}/generated_image.png';
+      final file = File(filePath);
+      await file.writeAsBytes(pngBytes);
+
+      await Share.shareXFiles([XFile(filePath)],
+          text: "Посмотрите на это изображение!");
+    } catch (e) {
+      print("Ошибка при генерации изображения: $e");
+    }
+  }
+
+/*
+  Future<void> _generateAndShareImage(Place point) async {
+    try {
+      final recorder = ui.PictureRecorder();
+      final canvas =
+          Canvas(recorder, Rect.fromPoints(Offset(0, 0), Offset(720, 900)));
+      final paint = Paint()..color = Colors.white;
+      final textureImage = await _loadImageFromNetwork(
+          'https://static.tildacdn.com/tild3837-3663-4535-b435-653030633733/bg-lines-min.png');
+      canvas.drawImage(textureImage, Offset(0, 0), paint);
+      final blurPaint = Paint()
+        ..color = Color.fromARGB(232, 255, 255, 255)
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, 10.0); // Размытие
+
+      // Рисуем прямоугольник с размытием
+      canvas.drawRect(Rect.fromLTWH(0, 0, 720, 1000), blurPaint);
+
+      double yOffset = 100; // Начальная позиция для фотографий
+      double imageSize = 150.0; // Размер круга
+      double padding = 40.0; // Расстояние между фотографиями
+
+      for (int i = 0; i < point.photosMain.length; i++) {
+        if (i % 2 == 0 && i == point.photosMain.length - 1) {
+          final imageUrl = point.photosMain[i].filePath;
+          final image = await _loadImageFromNetwork(imageUrl);
+          double xOffset = 225;
+          if (i % 2 == 0 && i != 0) {
+            yOffset += imageSize + 10; // Переход на следующую строку
+          }
+
+          // Применение обрезки в круг
+          final rrect = RRect.fromRectAndRadius(
+            Rect.fromLTWH(xOffset, yOffset, imageSize, imageSize),
+            Radius.circular(imageSize / 2), // Радиус круга
+          );
+          final shadowPaint = Paint()
+            ..color = Colors.black
+            ..maskFilter =
+                MaskFilter.blur(BlurStyle.normal, 8.0); // Тень с размытие
+          canvas.drawRRect(
+              rrect,
+              shadowPaint
+                ..color = Color.fromARGB(255, 51, 63, 112)
+                    .withOpacity(0.5) // Полупрозрачная тень
+
+              );
+          final paint = Paint();
+          paint.isAntiAlias = true;
+          canvas.drawRRect(
+              rrect,
+              paint
+                ..color = Color.fromARGB(255, 51, 63, 112) // Черная обводка
+                ..strokeWidth = 4 // Толщина обводки
+                ..style =
+                    PaintingStyle.stroke // Рисуем только обводку, без заливки
+              );
+          // Обрезаем картинку в круг
+          canvas.save();
+          canvas.clipRRect(rrect);
+          canvas.drawImageRect(
+            image,
+            Rect.fromLTWH(
+                0, 0, image.width.toDouble(), image.height.toDouble()),
+            Rect.fromLTWH(xOffset, yOffset, imageSize, imageSize),
+            paint,
+          );
+          canvas.restore();
+          if (i == point.photosMain.length - 1) {
+            yOffset += 10 + imageSize;
+          }
+        } else {
+          final imageUrl = point.photosMain[i].filePath;
+          final image = await _loadImageFromNetwork(imageUrl);
+
+          double xOffset = (i % 2 == 0)
+              ? (600 - imageSize * 2 - padding) /
+                  2 // Выравниваем фотографии по центру
+              : (600 - imageSize * 2 - padding) / 2 + imageSize + padding;
+
+          if (i % 2 == 0 && i != 0) {
+            yOffset += imageSize + padding; // Переход на следующую строку
+          }
+
+          // Применение обрезки в круг
+          final rrect = RRect.fromRectAndRadius(
+            Rect.fromLTWH(xOffset, yOffset, imageSize, imageSize),
+            Radius.circular(imageSize / 2), // Радиус круга
+          );
+
+          final paint = Paint()..isAntiAlias = true;
+          final shadowPaint = Paint()
+            ..color = Colors.black
+            ..maskFilter =
+                MaskFilter.blur(BlurStyle.normal, 15.0); // Тень с размытие
+          canvas.drawRRect(
+              rrect,
+              shadowPaint
+                ..color = Color.fromARGB(255, 51, 63, 112)
+                    .withOpacity(0.5) // Полупрозрачная теньлупрозрачная тень
+              );
+          // Рисуем черную обводку вокруг изображения
+          canvas.drawRRect(
+              rrect,
+              paint
+                ..color = Color.fromARGB(255, 51, 63, 112) // Черная обводка
+                ..strokeWidth = 4 // Толщина обводки
+                ..style =
+                    PaintingStyle.stroke // Рисуем только обводку, без заливки
+              );
+
+          // Обрезаем картинку в круг
+          canvas.save();
+          canvas.clipRRect(rrect);
+          canvas.drawImageRect(
+            image,
+            Rect.fromLTWH(
+                0, 0, image.width.toDouble(), image.height.toDouble()),
+            Rect.fromLTWH(xOffset, yOffset, imageSize, imageSize),
+            paint,
+          );
+          canvas.restore();
+          if (i == point.photosMain.length - 1) {
+            yOffset += 10 + imageSize;
+          }
+        }
+      }
+
+      // Рисуем название по центру
+      final titleText = point.name;
+      final titleStyle = ui.TextStyle(
+        fontSize: 30,
+        color: Color.fromARGB(255, 51, 63, 112),
+        fontWeight: FontWeight.bold,
+      );
+      final titleParagraphBuilder =
+          ParagraphBuilder(ParagraphStyle(textAlign: ui.TextAlign.center))
+            ..pushStyle(titleStyle)
+            ..addText(titleText);
+      final titleParagraph = titleParagraphBuilder.build()
+        ..layout(ParagraphConstraints(width: 600));
+
+      // Расчет центрального положения для названия
+      double titleX = (600 - titleParagraph.maxIntrinsicWidth) / 2;
+      canvas.drawParagraph(titleParagraph, Offset(60, 20));
+
+      // Рисуем описание под названием
+      final descriptionText = point.description;
+      final descriptionStyle =
+          ui.TextStyle(fontSize: 22, color: Color.fromARGB(255, 51, 63, 112));
+      final descriptionParagraphBuilder = ParagraphBuilder(
+        ParagraphStyle(
+          textAlign: TextAlign.center, // Выравнивание по левому краю
+        ),
+      )
+        ..pushStyle(descriptionStyle)
+        ..addText(descriptionText);
+
+// Строим абзац
+      final descriptionParagraph = descriptionParagraphBuilder.build()
+        ..layout(
+            ParagraphConstraints(width: 590)); // Ограничиваем ширину текста
+
+// Рисуем описание на холсте
+
+      // Расчет центрального положения для описания
+      double descriptionX = (600 - descriptionParagraph.maxIntrinsicWidth) / 2;
+      canvas.drawParagraph(descriptionParagraph, Offset(65, yOffset + 20));
+
+      // Генерация итогового изображения
+      final picture = recorder.endRecording();
+      final generatedImage = await picture.toImage(720, 900);
+
+      // Преобразование в PNG
+      final byteData =
+          await generatedImage.toByteData(format: ui.ImageByteFormat.png);
+      final pngBytes = byteData!.buffer.asUint8List();
+
+      // Сохранение изображения
+      final directory = await getTemporaryDirectory();
+      final filePath = '${directory.path}/generated_image.png';
+      final file = File(filePath);
+      await file.writeAsBytes(pngBytes);
+
+      // Отправка изображения
+      await Share.shareXFiles([XFile(filePath)],
+          text: "Посмотрите на это изображение!");
+    } catch (e) {
+      print("Ошибка при генерации изображения: $e");
+    }
+  }
+*/
+
+  /* Future<void> _captureAndSharePng() async {
     try {
       final boundary = _globalKey.currentContext?.findRenderObject()
           as RenderRepaintBoundary?;
@@ -139,7 +506,7 @@ class _SlidingPanelWidgetState extends State<SlidingPanelBodyWidget> {
       print("Ошибка при генерации изображения: $e");
     }
   }
-
+*/
   @override
   Widget build(BuildContext context) {
     final state = widget.state;
@@ -492,21 +859,25 @@ class _SlidingPanelWidgetState extends State<SlidingPanelBodyWidget> {
                                                       size: 25,
                                                     ),
                                                   ),
-                                                  FloatingActionButton(
-                                                    heroTag: 'Share_Button',
-                                                    backgroundColor:
-                                                        const Color.fromARGB(
-                                                            152, 95, 213, 81),
-                                                    elevation: 0,
-                                                    onPressed:
-                                                        _captureAndSharePng,
-                                                    child: const Icon(
-                                                      Icons.check,
-                                                      color: Color.fromARGB(
-                                                          255, 0, 133, 23),
-                                                      size: 35,
-                                                    ),
-                                                  ),
+                                                  Visibility(
+                                                      visible: !point
+                                                          .isPointTemporay,
+                                                      child:
+                                                          FloatingActionButton(
+                                                        heroTag: 'Share_Button',
+                                                        backgroundColor: Colors
+                                                            .grey.shade300,
+                                                        elevation: 0,
+                                                        onPressed: () async {
+                                                          await _generateAndShareImage(
+                                                              point); // Call the async function within a sync callback
+                                                        },
+                                                        child: const Icon(
+                                                          Icons.ios_share,
+                                                          color: Colors.black54,
+                                                          size: 35,
+                                                        ),
+                                                      )),
                                                   FloatingActionButton(
                                                     heroTag: 'SavePoint_Button',
                                                     backgroundColor:
