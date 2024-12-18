@@ -127,9 +127,7 @@ class _MapScreenState extends State<MapScreen> {
                 userBloc.add(InitialUserEvent());
                 pointBloc.add(LoadPointsEvent(userState.user.jwt));
                 _authPanelController.close();
-                Fluttertoast.showToast(
-                    msg:
-                    "Аккаунт успешно создан");
+
               }
               return const SizedBox.shrink();
             },

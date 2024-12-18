@@ -258,6 +258,9 @@ class _SlidingPanelWidgetState extends State<SlidingPanelWidget> {
                                         username: nameController.text));
                                     userBloc.stream.listen((userState) {
                                       if (userState is UserRegisteredState) {
+                                        Fluttertoast.showToast(
+                                            msg:
+                                            "Аккаунт успешно создан");
                                         userBloc.add(LoginUserEvent(
                                             email: userState.user.email,
                                             password: passwordContoller.text));
