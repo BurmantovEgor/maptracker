@@ -52,6 +52,8 @@ class UserService {
 
   Future<User> registerUser(RegisterUserEvent event) async {
     try {
+      print('infMessage123}');
+
       final response = await dio.post(
         '/api/users/register',
         data: {
@@ -61,6 +63,8 @@ class UserService {
         },
       );
       if (response.statusCode == 200) {
+        print('infMessage123}');
+
         final tempUser = User(
             id: 0,
             email: event.email,
@@ -69,11 +73,15 @@ class UserService {
             isAuthorized: true);
         return tempUser;
       } else {
+        print('infMessage}');
+
+        final String infMessage = response.data['message'];
+        print('infMessage:$infMessage}');
         return User(
             id: -1,
             email: event.email,
             username: event.username,
-            jwt: "",
+            jwt: infMessage,
             isAuthorized: false);
       }
     } catch (e) {
@@ -100,7 +108,6 @@ class UserService {
         );
         print('responceCode: ${response.statusCode}');
         if (response.statusCode == 200) {
-          print('ya v 200');
           final String token = response.data['token'];
           print('ya v 2002');
           final tempUser = User(

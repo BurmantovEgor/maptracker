@@ -1,8 +1,6 @@
-import 'dart:ffi';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
@@ -15,7 +13,6 @@ import '../../../bloc/point/point_state.dart';
 import '../../../bloc/user/user_block.dart';
 import '../../../bloc/user/user_event.dart';
 import '../../../bloc/user/user_state.dart';
-import '../../../data/mappers/photo_mapper.dart';
 import '../../../data/models/place.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../data/models/user.dart';
@@ -121,12 +118,18 @@ class _MapScreenState extends State<MapScreen> {
                 currentUser.isAuthorized = false;
                 pointBloc.add(LoadPointsEvent(''));
                 userBloc.add(InitialUserEvent());
+                _authPanelController.close();
+
               } else if (userState is UserLoadedState) {
                 currentUser.email = userState.user.email;
                 currentUser.jwt = userState.user.jwt;
                 currentUser.isAuthorized = true;
                 userBloc.add(InitialUserEvent());
                 pointBloc.add(LoadPointsEvent(userState.user.jwt));
+                _authPanelController.close();
+                Fluttertoast.showToast(
+                    msg:
+                    "Аккаунт успешно создан");
               }
               return const SizedBox.shrink();
             },

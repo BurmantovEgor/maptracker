@@ -17,15 +17,15 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     on<InitialUserEvent>(_onInditalUser);
   }
 
-  Future<void> _onRegisterUser(RegisterUserEvent event, Emitter<UserState> emit) async {
+  Future<void> _onRegisterUser(
+      RegisterUserEvent event, Emitter<UserState> emit) async {
     emit(UserLoadingState());
     try {
       final user = await apiService.registerUser(event);
       if (user.id != -1) {
         emit(UserRegisteredState(user: user));
-
       } else {
-        emit(UserErrorState(error: "Registration failed"));
+        emit(UserErrorState(error: user.jwt));
         emit(UserInitialState());
       }
     } catch (e) {
@@ -35,18 +35,14 @@ class UserBloc extends Bloc<UserEvent, UserState> {
   }
 
   Future<void> _onInditalUser(
-      InitialUserEvent event,
-      Emitter<UserState> emit)
-  async {
+      InitialUserEvent event, Emitter<UserState> emit) async {
     emit(UserInitialState());
   }
-
 
   Future<void> _onLoginUser(
       LoginUserEvent event, Emitter<UserState> emit) async {
     emit(UserLoadingState());
     try {
-
       final user = await apiService.loginUser(event);
       print('loggedUser');
       print(user.id);
@@ -56,7 +52,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         await prefs.setString('email', user.email);
         await prefs.setString('password', event.password);
         emit(UserLoadedState(user: user));
-      //  emit(UserInitialState());
+        //  emit(UserInitialState());
       } else {
         emit(UserErrorState(error: ""));
         emit(UserInitialState());

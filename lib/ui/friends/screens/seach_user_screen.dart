@@ -635,7 +635,7 @@ class _UserSearchScreenState extends State<SearchPeopleScreen> {
                     if (_isDropdownExpanded)
                       Container(
                         transform: Matrix4.translationValues(
-                            0, -MediaQuery.sizeOf(context).height * 0.02, 0),
+                            0, -MediaQuery.sizeOf(context).height * 0.025, 0),
                         width: double.infinity,
                         height: currentDeviceHeight * 0.93,
                         color: Colors.white,

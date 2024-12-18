@@ -266,7 +266,6 @@ class _SlidingPanelWidgetState extends State<SlidingPanelWidget> {
                                         passwordContoller.text = '';
                                         FocusScope.of(context)
                                             .unfocus(); // Закрываем клавиатуру
-                                        panelController.close();
                                       }
                                     });
                                   } else {
@@ -320,8 +319,7 @@ class _SlidingPanelWidgetState extends State<SlidingPanelWidget> {
                               },
                               child: const Text(
                                 "Выход",
-                                style: TextStyle(
-                                    color: Colors.black87),
+                                style: TextStyle(color: Colors.black87),
                               ),
                             ),
                           ))
