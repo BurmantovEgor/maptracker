@@ -119,7 +119,6 @@ class _MapScreenState extends State<MapScreen> {
                 pointBloc.add(LoadPointsEvent(''));
                 userBloc.add(InitialUserEvent());
                 _authPanelController.close();
-
               } else if (userState is UserLoadedState) {
                 currentUser.email = userState.user.email;
                 currentUser.jwt = userState.user.jwt;
@@ -127,7 +126,6 @@ class _MapScreenState extends State<MapScreen> {
                 userBloc.add(InitialUserEvent());
                 pointBloc.add(LoadPointsEvent(userState.user.jwt));
                 _authPanelController.close();
-
               }
               return const SizedBox.shrink();
             },
@@ -365,7 +363,10 @@ class _MapScreenState extends State<MapScreen> {
                                   child: Text(
                                 point.description.trim() == ''
                                     ? 'Описание отсутствует'
-                                    : point.description,
+                                    : point.description.indexOf("#") == -1
+                                        ? point.description
+                                        : point.description.substring(
+                                            0, point.description.indexOf("#")),
                                 style: const TextStyle(
                                   fontSize: 16,
                                   color: Colors.black87,

@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:map_tracker/bloc/user/userSearch_event.dart';
 import 'package:map_tracker/bloc/user/userSearch_state.dart';

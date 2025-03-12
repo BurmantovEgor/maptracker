@@ -1,4 +1,3 @@
-import 'package:yandex_mapkit/yandex_mapkit.dart';
 
 import '../../data/models/place.dart';
 import '../../data/models/user.dart';
